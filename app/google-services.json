@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1088435486329",
+    "project_id": "duta-1101",
+    "storage_bucket": "duta-1101.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1088435486329:android:c4362cdaac009fa6029ea8",
+        "android_client_info": {
+          "package_name": "com.pm.appdev.duta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbU6sBC3gRDm92a38FGQdfozP05HIdAZw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
