@@ -85,4 +85,5 @@
     <string name="enter_user_id">Please enter a user ID</string>
     <string name="user_id_already_exists">User ID already exists. Please choose a different one.</string>
     <string name="database_error">Database error. Please try again.</string>
+    <string name="enter_email_or_user_id">Enter Email Or UserID</string>
 </resources>
