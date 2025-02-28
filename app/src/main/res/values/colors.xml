@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#450c3a</color>
-    <color name="colorPrimaryDark">#390A30</color>
-    <color name="colorAccent">#b9974e</color>
-    <color name="red">#e91e63</color>
-    <color name="gray">#A2A2A2</color>
-    <color name="linkColor">#2196F3</color>
-    <color name="chat_background">#ededed</color>
-    <color name="white">#fff</color>
-    <color name="black">#000</color>
+    <color name="colorPrimary">#3D3B40</color> <!-- Replaced #001A6E -->
+    <color name="colorPrimaryDark">#525CEB</color> <!-- Replaced #074799 -->
+    <color name="colorAccent">#BFCFE7</color> <!-- Replaced #E1FFBB -->
+    <color name="colorApp">#009990</color> <!-- Kept the same -->
+    <color name="red">#e91e63</color> <!-- Kept the same -->
+    <color name="gray">#A2A2A2</color> <!-- Kept the same -->
+    <color name="linkColor">#2196F3</color> <!-- Kept the same -->
+    <color name="chat_background">#F8EDFF</color> <!-- Replaced #ededed -->
+    <color name="white">#fff</color> <!-- Kept the same -->
+    <color name="black">#000</color> <!-- Kept the same -->
 </resources>

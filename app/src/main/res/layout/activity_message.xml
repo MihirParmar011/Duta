@@ -36,6 +36,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/colorPrimaryDark"
         android:onClick="btnCloseClick"
         android:text="@string/close"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -49,6 +50,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:onClick="btnRetryClick"
+        android:backgroundTint="@color/colorPrimaryDark"
         android:text="@string/retry"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnClose" />

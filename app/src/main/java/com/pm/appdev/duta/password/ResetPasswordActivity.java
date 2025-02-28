@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pm.appdev.duta.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,86 +23,82 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private TextView tvMessage;
     private LinearLayout llResetPassword, llMessage;
     private Button btnRetry;
-    private  View progressBar;
+    private View progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reset_password);
 
+        // Initialize views
         etEmail = findViewById(R.id.etEmail);
         tvMessage = findViewById(R.id.tvMessage);
         llMessage = findViewById(R.id.llMessage);
         llResetPassword = findViewById(R.id.llResetPassword);
-
-        btnRetry = findViewById(R.id.btnClose);
+        btnRetry = findViewById(R.id.btnRetry);
         progressBar = findViewById(R.id.progressBar);
     }
 
-    public  void btnResetPasswordClick(View view){
-        final String email = etEmail.getText().toString().trim();
+    public void btnResetPasswordClick(View view) {
+        String email = etEmail.getText().toString().trim();
 
-        if(email.equals(""))
-        {
+        if (email.isEmpty()) {
             etEmail.setError(getString(R.string.enter_email));
+            return;
         }
-        else
-        {
-            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-            progressBar.setVisibility(View.VISIBLE);
-            firebaseAuth.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
 
-                    progressBar.setVisibility(View.GONE);
-                    llResetPassword.setVisibility(View.GONE);
-                    llMessage.setVisibility(View.VISIBLE);
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        progressBar.setVisibility(View.VISIBLE);
 
-                    if(task.isSuccessful())
-                    {
-                        tvMessage.setText(getString(R.string.reset_password_instructions, email));
-                        new CountDownTimer(60000, 1000){
+        firebaseAuth.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                progressBar.setVisibility(View.GONE);
+                llResetPassword.setVisibility(View.GONE);
+                llMessage.setVisibility(View.VISIBLE);
 
-                            @Override
-                            public void onTick(long l) {
-                                btnRetry.setText(getString( R.string.resend_timer,  String.valueOf(l/1000)) );
-                                btnRetry.setOnClickListener(null);
-                            }
+                if (task.isSuccessful()) {
+                    tvMessage.setText(getString(R.string.reset_password_instructions, email));
 
-                            @Override
-                            public void onFinish() {
-                                btnRetry.setText(R.string.retry);
+                    // Start a countdown timer for 60 seconds
+                    new CountDownTimer(60000, 1000) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            btnRetry.setText(getString(R.string.resend_timer, String.valueOf(millisUntilFinished / 1000)));
+                            btnRetry.setOnClickListener(null); // Disable button during countdown
+                        }
 
-                                btnRetry.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        llResetPassword.setVisibility(View.VISIBLE);
-                                        llMessage.setVisibility(View.GONE);
-                                    }
-                                });
-                            }
-                        }.start();
-                    }
-                    else
-                    {
-                        tvMessage.setText(getString(R.string.email_sent_failed, task.getException()));
-                        btnRetry.setText(R.string.retry);
+                        @Override
+                        public void onFinish() {
+                            btnRetry.setText(R.string.retry);
+                            btnRetry.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    llResetPassword.setVisibility(View.VISIBLE);
+                                    llMessage.setVisibility(View.GONE);
+                                }
+                            });
+                        }
+                    }.start();
+                } else {
+                    // Handle failure
+                    String errorMessage = task.getException() != null ? task.getException().getMessage() : getString(R.string.email_sent_failed);
+                    tvMessage.setText(getString(R.string.email_sent_failed, errorMessage));
+                    btnRetry.setText(R.string.retry);
 
-                        btnRetry.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                llResetPassword.setVisibility(View.VISIBLE);
-                                llMessage.setVisibility(View.GONE);
-                            }
-                        });
-                    }
+                    btnRetry.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            llResetPassword.setVisibility(View.VISIBLE);
+                            llMessage.setVisibility(View.GONE);
+                        }
+                    });
                 }
-            });
-        }
+            }
+        });
     }
 
-    public void btnCloseClick(View view)
-    {
-        finish();
+    public void btnCloseClick(View view) {
+        finish(); // Close the activity
     }
 }
