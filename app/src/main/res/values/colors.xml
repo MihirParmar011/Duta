@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3D3B40</color> <!-- Replaced #001A6E -->
-    <color name="colorPrimaryDark">#525CEB</color> <!-- Replaced #074799 -->
+    <color name="colorPrimary">#525CEB</color> <!-- Replaced #001A6E -->
+    <color name="colorPrimaryDark">#3D3B40</color> <!-- Replaced #074799 -->
     <color name="colorAccent">#BFCFE7</color> <!-- Replaced #E1FFBB -->
     <color name="colorApp">#009990</color> <!-- Kept the same -->
     <color name="red">#e91e63</color> <!-- Kept the same -->

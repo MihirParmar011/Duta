@@ -65,16 +65,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:tint="@color/gray"
-            app:srcCompat="@drawable/ic_attachment" />
+            app:srcCompat="@drawable/ic_attachment"
+            app:tint="@color/gray" />
 
         <ImageView
             android:id="@+id/ivSend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:tint="@color/gray"
-            app:srcCompat="@drawable/ic_send" />
+            app:srcCompat="@drawable/ic_send"
+            app:tint="@color/gray" />
     </LinearLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout

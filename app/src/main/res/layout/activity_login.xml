@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:onClick="btnLoginClick"
-                android:backgroundTint="@color/colorPrimaryDark"
+                android:backgroundTint="@color/colorPrimary"
                 android:paddingLeft="32dp"
                 android:paddingRight="32dp"
                 android:text="@string/login"
@@ -115,7 +115,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/donthave_account"
-            android:textColor="@color/colorPrimary" />
+            android:textColor="@color/colorPrimaryDark" />
 
         <TextView
             android:id="@+id/textView4"
@@ -125,7 +125,7 @@
             android:onClick="tvSignupClick"
             android:text="@string/signup"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorPrimaryDark"
             />
     </LinearLayout>
 
