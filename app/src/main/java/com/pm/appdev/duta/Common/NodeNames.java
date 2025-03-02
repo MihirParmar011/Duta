@@ -32,6 +32,7 @@ public class NodeNames {
 
     public static final String TYPING = "typing" ;
     public static final String USER_ID = "User_ID";
+    public static String CHAT_ID = "CHAT_ID";
 }
 
 

@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -126,6 +127,20 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             actionBar.setHomeButtonEnabled(true);
             actionBar.setElevation(0);
 
+            // Initialize views from the custom action bar layout
+            ivProfile = actionBarLayout.findViewById(R.id.ivProfile);
+            tvUserName = actionBarLayout.findViewById(R.id.tvUserName);
+            tvUserStatus = actionBarLayout.findViewById(R.id.tvUserStatus);
+            if (ivProfile == null) {
+                Log.e("ChatActivity", "ivProfile is null");
+            }
+            if (tvUserName == null) {
+                Log.e("ChatActivity", "tvUserName is null");
+            }
+            if (tvUserStatus == null) {
+                Log.e("ChatActivity", "tvUserStatus is null");
+            }
+
             actionBar.setCustomView(actionBarLayout);
             actionBar.setDisplayOptions(actionBar.getDisplayOptions() | ActionBar.DISPLAY_SHOW_CUSTOM);
         }
@@ -133,11 +148,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         // initialization of variables inside onCreate Method
         cgSmartReplies = findViewById(R.id.cgSmartReplies);
         conversation = new ArrayList<>();
-
-        ivProfile = findViewById(R.id.ivProfile);
-        tvUserName = findViewById(R.id.tvUserName);
-
-        tvUserStatus = findViewById(R.id.tvUserStatus);
 
         ivSend = findViewById(R.id.ivSend);
         ivAttachment = findViewById(R.id.ivAttachment);
@@ -159,8 +169,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         if (getIntent().hasExtra(Extras.USER_NAME))
             userName = getIntent().getStringExtra(Extras.USER_NAME);
 
-        //if (getIntent().hasExtra(Extras.PHOTO_NAME))
-            //getIntent().getStringExtra(Extras.PHOTO_NAME);
+        if (getIntent().hasExtra(Extras.PHOTO_NAME))
+            getIntent().getStringExtra(Extras.PHOTO_NAME);
 
 
         tvUserName.setText(userName);
@@ -434,56 +444,88 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
+        if (view == null) {
+            // Handle null view case
+            return;
+        }
 
-        switch (view.getId()) {
-            case R.id.ivSend:
-                if (Util.connectionAvailable(this)) {
-                    DatabaseReference userMessagePush = mRootRef.child(NodeNames.MESSAGES).child(currentUserId).child(chatUserId).push();
-                    String pushId = userMessagePush.getKey();
-                    sendMessage(etMessage.getText().toString().trim(), Constants.MESSAGE_TYPE_TEXT, pushId);
+        int viewId = view.getId();
+
+        if (viewId == R.id.ivSend) {
+            // Handle send button click
+            if (Util.connectionAvailable(this)) {
+                DatabaseReference userMessagePush = mRootRef.child(NodeNames.MESSAGES)
+                        .child(currentUserId).child(chatUserId).push();
+                String pushId = userMessagePush.getKey();
+                String messageText = etMessage.getText().toString().trim();
+                if (!TextUtils.isEmpty(messageText)) {
+                    sendMessage(messageText, Constants.MESSAGE_TYPE_TEXT, pushId);
                 } else {
-                    Toast.makeText(this, R.string.no_internet, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
                 }
-                break;
-
-            case R.id.ivAttachment:
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    if (bottomSheetDialog != null)
-                        bottomSheetDialog.show();
-
-
-                } else {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            } else {
+                Toast.makeText(this, R.string.no_internet, Toast.LENGTH_SHORT).show();
+            }
+        } else if (viewId == R.id.ivAttachment) {
+            // Handle attachment button click
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                if (bottomSheetDialog != null) {
+                    bottomSheetDialog.show();
                 }
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            }
 
-
-                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                if (inputMethodManager != null)
-                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                break;
-
-            case R.id.llCamera:
+            // Hide the keyboard
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            if (inputMethodManager != null && view.getWindowToken() != null) {
+                inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        } else if (viewId == R.id.llCamera) {
+            // Handle camera option click
+            if (bottomSheetDialog != null) {
                 bottomSheetDialog.dismiss();
-                Intent intentCamera = new Intent(ACTION_IMAGE_CAPTURE);
+            }
+            Intent intentCamera = new Intent(ACTION_IMAGE_CAPTURE);
+            if (intentCamera.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(intentCamera, REQUEST_CODE_CAPTURE_IMAGE);
-                break;
-
-            case R.id.llGallery:
+            } else {
+                Toast.makeText(this, "No camera app found", Toast.LENGTH_SHORT).show();
+            }
+        } else if (viewId == R.id.llGallery) {
+            // Handle gallery option click
+            if (bottomSheetDialog != null) {
                 bottomSheetDialog.dismiss();
-                Intent intentImage = new Intent(Intent.ACTION_PICK,
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            }
+            Intent intentImage = new Intent(Intent.ACTION_PICK,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            if (intentImage.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(intentImage, REQUEST_CODE_PICK_IMAGE);
-                break;
-
-            case R.id.llVideo:
+            } else {
+                Toast.makeText(this, "No gallery app found", Toast.LENGTH_SHORT).show();
+            }
+        } else if (viewId == R.id.llVideo) {
+            // Handle video option click
+            if (bottomSheetDialog != null) {
                 bottomSheetDialog.dismiss();
-                Intent intentVideo = new Intent(Intent.ACTION_PICK,
-                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+            }
+            Intent intentVideo = new Intent(Intent.ACTION_PICK,
+                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+            if (intentVideo.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(intentVideo, REQUEST_CODE_PICK_VIDEO);
-                break;
-            case R.id.ivClose:
+            } else {
+                Toast.makeText(this, "No video app found", Toast.LENGTH_SHORT).show();
+            }
+        } else if (viewId == R.id.ivClose) {
+            // Handle close button click
+            if (bottomSheetDialog != null) {
                 bottomSheetDialog.dismiss();
-                break;
+            }
+        } else {
+            // Handle unknown view ID
+            Toast.makeText(this, "Unknown view clicked", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -901,8 +943,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
                                                     Chip chip = new Chip(ChatActivity.this);
                                                     ChipDrawable drawable = ChipDrawable.createFromAttributes(ChatActivity.this,
-                                                            null, 0, R.style.Widget_MaterialComponents_Chip_Action);
-
+                                                            null, 0, R.style.Base_Theme_Duta);
+// R.style.Widget_MaterialComponents_Chip_Action
                                                     chip.setChipDrawable(drawable);
                                                     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                                                             LinearLayout.LayoutParams.WRAP_CONTENT,

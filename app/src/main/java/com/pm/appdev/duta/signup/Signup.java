@@ -24,6 +24,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -99,7 +100,6 @@ public class Signup extends AppCompatActivity {
         }
     }
 
-
     public void btnSignupClick(View v) {
         String email = etEmail.getText().toString().trim();
         String name = etName.getText().toString().trim();
@@ -143,7 +143,6 @@ public class Signup extends AppCompatActivity {
                         Toast.makeText(Signup.this, "Signup failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-
     }
 
     private void uploadProfilePicture(String name, String email, String userId) {
@@ -178,7 +177,6 @@ public class Signup extends AppCompatActivity {
         }
     }
 
-
     private void saveUserData(String name, String email, String userId, String photoUrl) {
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(task -> {
@@ -212,10 +210,9 @@ public class Signup extends AppCompatActivity {
                             });
                 });
     }
-
 }
 
-
+//
 //package com.pm.appdev.duta.signup;
 //
 //import android.Manifest;

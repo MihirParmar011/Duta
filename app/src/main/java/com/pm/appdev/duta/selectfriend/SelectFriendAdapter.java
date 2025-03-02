@@ -12,8 +12,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.appeteria.training.gupshup.Common.Constants;
-import com.appeteria.training.gupshup.R;
+import com.pm.appdev.duta.R;
+import com.pm.appdev.duta.Common.Constants;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;

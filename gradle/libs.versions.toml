@@ -27,6 +27,7 @@ constraintlayout = "2.1.4"
 materialVersion = "1.1.0"
 smartReply = "16.1.1"
 volley = "1.2.1"
+recyclerview = "1.4.0"
 
 [libraries]
 activity-v180 = { module = "androidx.activity:activity", version.ref = "activityVersion" }
@@ -59,6 +60,7 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 material-v110 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
 smart-reply = { module = "com.google.mlkit:smart-reply", version.ref = "smartReply" }
 volley = { module = "com.android.volley:volley", version.ref = "volley" }
+recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
