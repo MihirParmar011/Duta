@@ -2,7 +2,7 @@ package com.pm.appdev.duta.Common;
 
 public class NodeNames {
 
-    public  static  final  String USERS = "Users";
+    public  static  final  String USERS = "users";
     public static final String FRIEND_REQUESTS ="FriendRequests" ;
     public static final String CHATS ="Chats" ;
     public static final String MESSAGES = "Messages";
@@ -31,7 +31,7 @@ public class NodeNames {
     public static final String LAST_MESSAGE_TIME = "last_message_time";
 
     public static final String TYPING = "typing" ;
-    public static final String USER_ID = "User_ID";
+    public static final String USER_ID = "userId";
     public static String CHAT_ID = "CHAT_ID";
 }
 

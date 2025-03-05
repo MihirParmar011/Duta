@@ -96,25 +96,26 @@ public class FindFriendsFragment extends Fragment {
         findFriendModelList.clear(); // Clear the list before searching
 
         // Query Firebase for the specific userId
-        Query query = databaseReference.orderByChild("userId").equalTo(userId);
+        Query query = databaseReference.orderByChild(NodeNames.USER_ID).equalTo(userId);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 findFriendModelList.clear();
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        String userId = ds.getKey();
-                        if (userId.equals(currentUser.getUid())) continue; // Skip the current user
+                        // Get the userId from the child node
+                        String id = ds.child(NodeNames.USER_ID).getValue(String.class);
+                        if (id == null || id.equals(currentUser.getUid())) continue; // Skip the current user
 
                         String fullName = ds.child(NodeNames.NAME).getValue(String.class);
                         String photoName = ds.child(NodeNames.PHOTO).getValue(String.class);
 
                         // Check if a friend request has already been sent
-                        databaseReferenceFriendRequests.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                        databaseReferenceFriendRequests.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 boolean requestSent = dataSnapshot.exists() && dataSnapshot.child(NodeNames.REQUEST_TYPE).getValue(String.class).equals(Constants.REQUEST_STATUS_SENT);
-                                findFriendModelList.add(new FindFriendModel(fullName, photoName, userId, requestSent));
+                                findFriendModelList.add(new FindFriendModel(fullName, photoName, id, requestSent));
                                 findFriendAdapter.notifyDataSetChanged();
                             }
 

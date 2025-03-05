@@ -26,7 +26,7 @@
             android:layout_marginBottom="140dp"
             android:text="@string/app_name"
             android:textAppearance="@style/TextAppearance.AppCompat.Display3"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorPrimaryDark"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"

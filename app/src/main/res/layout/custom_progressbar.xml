@@ -25,7 +25,7 @@
             android:layout_marginTop="8dp"
             android:text="@string/loading"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorPrimaryDark"
             android:textStyle="bold" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

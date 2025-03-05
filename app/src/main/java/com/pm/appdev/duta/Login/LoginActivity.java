@@ -38,6 +38,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etEmailOrUserId, etPassword;
     private String emailOrUserId, password;
     private View progressBar;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
