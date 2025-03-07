@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@color/colorPrimary">
+    >
 
     <!-- Image at the Top -->
     <ImageView
@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_request"
         android:tint="@android:color/white"
-        tools:ignore="UseAppTint" />
+        tools:ignore="ContentDescription,UseAppTint" />
 
     <!-- Text Below the Image -->
     <TextView

@@ -14,7 +14,8 @@
         android:layout_width="42dp"
         android:layout_height="42dp"
         app:civ_border="false"
-        android:src="@drawable/default_profile"/>
+        android:src="@drawable/ic_profile"
+        android:tint="@color/white"/>
 
     <LinearLayout
         android:layout_width="wrap_content"

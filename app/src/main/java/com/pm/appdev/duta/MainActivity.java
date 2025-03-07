@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -12,6 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.lifecycle.Lifecycle;
@@ -73,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
         databaseReferenceUsers.child(NodeNames.ONLINE).onDisconnect().setValue(false);
 
         setViewPager();
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
     }
 
     private void setViewPager() {
@@ -82,8 +90,8 @@ public class MainActivity extends AppCompatActivity {
 
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-//        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
-//        viewPager.setAdapter(adapter);
+        ViewPagerAdapter adapter = new ViewPagerAdapter(this);
+        viewPager.setAdapter(adapter);
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -106,14 +114,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private static class ViewPagerAdapter extends FragmentPagerAdapter {
-        public ViewPagerAdapter(@NonNull FragmentManager fm, Lifecycle behavior) {
-            super(fm);
+    public class ViewPagerAdapter extends FragmentStateAdapter {
+
+        public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
         }
 
         @NonNull
         @Override
-        public Fragment getItem(int position) {
+        public Fragment createFragment(int position) {
             switch (position) {
                 case 0:
                     return new ChatFragment();
@@ -127,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getCount() {
+        public int getItemCount() {
             return 3;
         }
     }

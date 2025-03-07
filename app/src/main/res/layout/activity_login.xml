@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:onClick="btnLoginClick"
-                android:backgroundTint="@color/colorPrimary"
+                android:backgroundTint="@color/colorPrimaryDark"
                 android:paddingLeft="32dp"
                 android:paddingRight="32dp"
                 android:text="@string/login"
@@ -91,7 +91,7 @@
                 android:padding="6dp"
                 android:text="@string/reset_password"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@color/colorPrimary"
+                android:textColor="@color/colorPrimaryDark"
                  />
         </LinearLayout>
     </androidx.cardview.widget.CardView>

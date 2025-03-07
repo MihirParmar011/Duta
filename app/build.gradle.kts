@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
+    implementation(libs.car.ui.lib)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -82,4 +83,5 @@ dependencies {
     implementation(platform(libs.firebase.bom.v3270))
     implementation(libs.google.firebase.storage)
     implementation(libs.google.firebase.analytics)
+    implementation ("com.android.car.ui:car-ui-lib:2.5.0")
 }
