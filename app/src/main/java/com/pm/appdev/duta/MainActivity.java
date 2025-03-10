@@ -141,20 +141,37 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        return super.onCreateOptionsMenu(menu);
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//        if (item.getItemId() == R.id.mnuProfile) {
+//            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.mnuProfile) {
-            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+      public boolean onCreateOptionsMenu(Menu menu) {
+          getMenuInflater().inflate(R.menu.menu_main, menu);
+          return super.onCreateOptionsMenu(menu);
+      }
+
+      @Override
+      public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+          int id = item.getItemId();
+
+          if(id==R.id.mnuProfile)
+          {
+              startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+          }
+          return super.onOptionsItemSelected(item);
+      }
 
     private boolean doubleBackPressed = false;
 

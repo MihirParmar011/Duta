@@ -1,29 +1,34 @@
 package com.pm.appdev.duta.requests;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.pm.appdev.duta.Common.Util;
+import com.pm.appdev.duta.R;
 import com.pm.appdev.duta.Common.Constants;
 import com.pm.appdev.duta.Common.NodeNames;
-import com.pm.appdev.duta.R;
-
 import java.util.List;
 
 public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHolder> {
-
     private Context context;
     private List<RequestModel> requestModelList;
     private DatabaseReference databaseReferenceFriendRequests, databaseReferenceChats;
@@ -32,103 +37,79 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestV
     public RequestAdapter(Context context, List<RequestModel> requestModelList) {
         this.context = context;
         this.requestModelList = requestModelList;
-
-        // Initialize Firebase
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        databaseReferenceFriendRequests = FirebaseDatabase.getInstance().getReference().child(NodeNames.FRIEND_REQUESTS);
-        databaseReferenceChats = FirebaseDatabase.getInstance().getReference().child(NodeNames.CHATS);
     }
 
     @NonNull
     @Override
-    public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RequestAdapter.RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.friend_request_layout, parent, false);
         return new RequestViewHolder(view);
     }
 
-
     @Override
-    public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
-        RequestModel requestModel = requestModelList.get(position);
+    public void onBindViewHolder(@NonNull final RequestAdapter.RequestViewHolder holder, int position) {
+        final RequestModel requestModel = requestModelList.get(position);
 
-        // Set user name
         holder.tvFullName.setText(requestModel.getUserName());
 
-        // Handle accept button click
-        holder.btnAcceptRequest.setOnClickListener(v -> {
-            holder.pbDecision.setVisibility(View.VISIBLE);
-            holder.btnAcceptRequest.setVisibility(View.GONE);
-            holder.btnDenyRequest.setVisibility(View.GONE);
+        StorageReference fileRef = FirebaseStorage.getInstance().getReference()
+                .child(Constants.IMAGES_FOLDER + "/" + requestModel.getPhotoName());
 
-            // Update the request status to "accepted"
-            databaseReferenceFriendRequests.child(currentUser.getUid())
-                    .child(requestModel.getUserId())
-                    .child(NodeNames.REQUEST_TYPE)
-                    .setValue(Constants.REQUEST_STATUS_ACCEPTED)
+        fileRef.getDownloadUrl().addOnSuccessListener(uri -> Glide.with(context)
+                .load(uri)
+                .placeholder(R.drawable.default_profile)
+                .error(R.drawable.default_profile)
+                .into(holder.ivProfile));
+
+        databaseReferenceFriendRequests = FirebaseDatabase.getInstance().getReference().child(NodeNames.FRIEND_REQUESTS);
+        databaseReferenceChats = FirebaseDatabase.getInstance().getReference().child(NodeNames.CHATS);
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        // Accept Friend Request
+        holder.btnAcceptRequest.setOnClickListener(view -> handleFriendRequest(holder, requestModel, true));
+
+        // Deny Friend Request
+        holder.btnDenyRequest.setOnClickListener(view -> handleFriendRequest(holder, requestModel, false));
+    }
+
+    private void handleFriendRequest(RequestViewHolder holder, RequestModel requestModel, boolean isAccepted) {
+        holder.pbDecision.setVisibility(View.VISIBLE);
+        holder.btnDenyRequest.setVisibility(View.GONE);
+        holder.btnAcceptRequest.setVisibility(View.GONE);
+
+        final String userId = requestModel.getUserId();
+
+        if (isAccepted) {
+            databaseReferenceChats.child(currentUser.getUid()).child(userId)
+                    .child(NodeNames.TIME_STAMP).setValue(ServerValue.TIMESTAMP)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            databaseReferenceFriendRequests.child(requestModel.getUserId())
-                                    .child(currentUser.getUid())
-                                    .child(NodeNames.REQUEST_TYPE)
-                                    .setValue(Constants.REQUEST_STATUS_ACCEPTED)
-                                    .addOnCompleteListener(task1 -> {
-                                        if (task1.isSuccessful()) {
-                                            // Add users to chats node
-                                            String chatKey = databaseReferenceChats.push().getKey();
-                                            if (chatKey != null) {
-                                                databaseReferenceChats.child(currentUser.getUid())
-                                                        .child(requestModel.getUserId())
-                                                        .child(NodeNames.CHAT_ID) // Use the constant here
-                                                        .setValue(chatKey);
-
-                                                databaseReferenceChats.child(requestModel.getUserId())
-                                                        .child(currentUser.getUid())
-                                                        .child(NodeNames.CHAT_ID) // Use the constant here
-                                                        .setValue(chatKey);
-
-                                                Toast.makeText(context, "Friend request accepted.", Toast.LENGTH_SHORT).show();
-                                            }
-                                        } else {
-                                            Toast.makeText(context, "Failed to accept friend request.", Toast.LENGTH_SHORT).show();
-                                        }
-                                        holder.pbDecision.setVisibility(View.GONE);
-                                    });
-                        } else {
-                            Toast.makeText(context, "Failed to accept friend request.", Toast.LENGTH_SHORT).show();
-                            holder.pbDecision.setVisibility(View.GONE);
+                            databaseReferenceChats.child(userId).child(currentUser.getUid())
+                                    .child(NodeNames.TIME_STAMP).setValue(ServerValue.TIMESTAMP);
                         }
                     });
-        });
 
-        // Handle deny button click
-        holder.btnDenyRequest.setOnClickListener(v -> {
-            holder.pbDecision.setVisibility(View.VISIBLE);
-            holder.btnAcceptRequest.setVisibility(View.GONE);
-            holder.btnDenyRequest.setVisibility(View.GONE);
+            databaseReferenceFriendRequests.child(currentUser.getUid()).child(userId)
+                    .child(NodeNames.REQUEST_TYPE).setValue(Constants.REQUEST_STATUS_ACCEPTED)
+                    .addOnCompleteListener(task -> handleResult(holder, userId, isAccepted, task.isSuccessful()));
+        } else {
+            databaseReferenceFriendRequests.child(currentUser.getUid()).child(userId)
+                    .child(NodeNames.REQUEST_TYPE).removeValue()
+                    .addOnCompleteListener(task -> handleResult(holder, userId, isAccepted, task.isSuccessful()));
+        }
+    }
 
-            // Remove the friend request
-            databaseReferenceFriendRequests.child(currentUser.getUid())
-                    .child(requestModel.getUserId())
-                    .removeValue()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            databaseReferenceFriendRequests.child(requestModel.getUserId())
-                                    .child(currentUser.getUid())
-                                    .removeValue()
-                                    .addOnCompleteListener(task1 -> {
-                                        if (task1.isSuccessful()) {
-                                            Toast.makeText(context, "Friend request denied.", Toast.LENGTH_SHORT).show();
-                                        } else {
-                                            Toast.makeText(context, "Failed to deny friend request.", Toast.LENGTH_SHORT).show();
-                                        }
-                                        holder.pbDecision.setVisibility(View.GONE);
-                                    });
-                        } else {
-                            Toast.makeText(context, "Failed to deny friend request.", Toast.LENGTH_SHORT).show();
-                            holder.pbDecision.setVisibility(View.GONE);
-                        }
-                    });
-        });
+    private void handleResult(RequestViewHolder holder, String userId, boolean isAccepted, boolean success) {
+        holder.pbDecision.setVisibility(View.GONE);
+        holder.btnDenyRequest.setVisibility(View.VISIBLE);
+        holder.btnAcceptRequest.setVisibility(View.VISIBLE);
+
+        if (success) {
+            String message = isAccepted ? "Friend request accepted" : "Friend request denied";
+            Util.sendNotification(context, message, "By " + currentUser.getDisplayName(), userId);
+        } else {
+            Toast.makeText(context, "Failed to process request", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -137,19 +118,175 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestV
     }
 
     public static class RequestViewHolder extends RecyclerView.ViewHolder {
-        TextView tvFullName;
-        Button btnAcceptRequest, btnDenyRequest;
-        ProgressBar pbDecision;
+        private TextView tvFullName;
+        private ImageView ivProfile;
+        private Button btnAcceptRequest, btnDenyRequest;
+        private ProgressBar pbDecision;
 
         public RequestViewHolder(@NonNull View itemView) {
             super(itemView);
             tvFullName = itemView.findViewById(R.id.tvFullName);
+            ivProfile = itemView.findViewById(R.id.ivProfile);
             btnAcceptRequest = itemView.findViewById(R.id.btnAcceptRequest);
             btnDenyRequest = itemView.findViewById(R.id.btnDenyRequest);
             pbDecision = itemView.findViewById(R.id.pbDecision);
         }
     }
 }
+
+
+//package com.pm.appdev.duta.requests;
+//
+//import android.content.Context;
+//import android.view.LayoutInflater;
+//import android.view.View;
+//import android.view.ViewGroup;
+//import android.widget.Button;
+//import android.widget.ProgressBar;
+//import android.widget.TextView;
+//import android.widget.Toast;
+//
+//import androidx.annotation.NonNull;
+//import androidx.recyclerview.widget.RecyclerView;
+//
+//import com.google.firebase.auth.FirebaseAuth;
+//import com.google.firebase.auth.FirebaseUser;
+//import com.google.firebase.database.DatabaseReference;
+//import com.google.firebase.database.FirebaseDatabase;
+//import com.pm.appdev.duta.Common.Constants;
+//import com.pm.appdev.duta.Common.NodeNames;
+//import com.pm.appdev.duta.R;
+//
+//import java.util.List;
+//
+//public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestViewHolder> {
+//
+//    private Context context;
+//    private List<RequestModel> requestModelList;
+//    private DatabaseReference databaseReferenceFriendRequests, databaseReferenceChats;
+//    private FirebaseUser currentUser;
+//
+//    public RequestAdapter(Context context, List<RequestModel> requestModelList) {
+//        this.context = context;
+//        this.requestModelList = requestModelList;
+//
+//        // Initialize Firebase
+//        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+//        databaseReferenceFriendRequests = FirebaseDatabase.getInstance().getReference().child(NodeNames.FRIEND_REQUESTS);
+//        databaseReferenceChats = FirebaseDatabase.getInstance().getReference().child(NodeNames.CHATS);
+//    }
+//
+//    @NonNull
+//    @Override
+//    public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+//        View view = LayoutInflater.from(context).inflate(R.layout.friend_request_layout, parent, false);
+//        return new RequestViewHolder(view);
+//    }
+//
+//
+//    @Override
+//    public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
+//        RequestModel requestModel = requestModelList.get(position);
+//
+//        // Set user name
+//        holder.tvFullName.setText(requestModel.getUserName());
+//
+//        // Handle accept button click
+//        holder.btnAcceptRequest.setOnClickListener(v -> {
+//            holder.pbDecision.setVisibility(View.VISIBLE);
+//            holder.btnAcceptRequest.setVisibility(View.GONE);
+//            holder.btnDenyRequest.setVisibility(View.GONE);
+//
+//            // Update the request status to "accepted"
+//            databaseReferenceFriendRequests.child(currentUser.getUid())
+//                    .child(requestModel.getUserId())
+//                    .child(NodeNames.REQUEST_TYPE)
+//                    .setValue(Constants.REQUEST_STATUS_ACCEPTED)
+//                    .addOnCompleteListener(task -> {
+//                        if (task.isSuccessful()) {
+//                            databaseReferenceFriendRequests.child(requestModel.getUserId())
+//                                    .child(currentUser.getUid())
+//                                    .child(NodeNames.REQUEST_TYPE)
+//                                    .setValue(Constants.REQUEST_STATUS_ACCEPTED)
+//                                    .addOnCompleteListener(task1 -> {
+//                                        if (task1.isSuccessful()) {
+//                                            // Add users to chats node
+//                                            String chatKey = databaseReferenceChats.push().getKey();
+//                                            if (chatKey != null) {
+//                                                databaseReferenceChats.child(currentUser.getUid())
+//                                                        .child(requestModel.getUserId())
+//                                                        .child(NodeNames.CHAT_ID) // Use the constant here
+//                                                        .setValue(chatKey);
+//
+//                                                databaseReferenceChats.child(requestModel.getUserId())
+//                                                        .child(currentUser.getUid())
+//                                                        .child(NodeNames.CHAT_ID) // Use the constant here
+//                                                        .setValue(chatKey);
+//
+//                                                Toast.makeText(context, "Friend request accepted.", Toast.LENGTH_SHORT).show();
+//                                            }
+//                                        } else {
+//                                            Toast.makeText(context, "Failed to accept friend request.", Toast.LENGTH_SHORT).show();
+//                                        }
+//                                        holder.pbDecision.setVisibility(View.GONE);
+//                                    });
+//                        } else {
+//                            Toast.makeText(context, "Failed to accept friend request.", Toast.LENGTH_SHORT).show();
+//                            holder.pbDecision.setVisibility(View.GONE);
+//                        }
+//                    });
+//        });
+//
+//        // Handle deny button click
+//        holder.btnDenyRequest.setOnClickListener(v -> {
+//            holder.pbDecision.setVisibility(View.VISIBLE);
+//            holder.btnAcceptRequest.setVisibility(View.GONE);
+//            holder.btnDenyRequest.setVisibility(View.GONE);
+//
+//            // Remove the friend request
+//            databaseReferenceFriendRequests.child(currentUser.getUid())
+//                    .child(requestModel.getUserId())
+//                    .removeValue()
+//                    .addOnCompleteListener(task -> {
+//                        if (task.isSuccessful()) {
+//                            databaseReferenceFriendRequests.child(requestModel.getUserId())
+//                                    .child(currentUser.getUid())
+//                                    .removeValue()
+//                                    .addOnCompleteListener(task1 -> {
+//                                        if (task1.isSuccessful()) {
+//                                            Toast.makeText(context, "Friend request denied.", Toast.LENGTH_SHORT).show();
+//                                        } else {
+//                                            Toast.makeText(context, "Failed to deny friend request.", Toast.LENGTH_SHORT).show();
+//                                        }
+//                                        holder.pbDecision.setVisibility(View.GONE);
+//                                    });
+//                        } else {
+//                            Toast.makeText(context, "Failed to deny friend request.", Toast.LENGTH_SHORT).show();
+//                            holder.pbDecision.setVisibility(View.GONE);
+//                        }
+//                    });
+//        });
+//    }
+//
+//    @Override
+//    public int getItemCount() {
+//        return requestModelList.size();
+//    }
+//
+//    public static class RequestViewHolder extends RecyclerView.ViewHolder {
+//        TextView tvFullName;
+//        Button btnAcceptRequest, btnDenyRequest;
+//        ProgressBar pbDecision;
+//
+//        public RequestViewHolder(@NonNull View itemView) {
+//            super(itemView);
+//            tvFullName = itemView.findViewById(R.id.tvFullName);
+//            btnAcceptRequest = itemView.findViewById(R.id.btnAcceptRequest);
+//            btnDenyRequest = itemView.findViewById(R.id.btnDenyRequest);
+//            pbDecision = itemView.findViewById(R.id.pbDecision);
+//        }
+//    }
+//}
 
 
 //package com.pm.appdev.duta.requests;
