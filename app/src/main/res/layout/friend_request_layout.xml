@@ -44,7 +44,8 @@
                     android:id="@+id/btnAcceptRequest"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/accept" />
+                    android:text="@string/accept"
+                    app:backgroundTint="@color/colorPrimary"/>
 
                 <Button
                     android:id="@+id/btnDenyRequest"
@@ -52,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:text="@string/deny"
-                    app:backgroundTint="@color/red" />
+                    app:backgroundTint="@color/linkColor" />
 
                 <ProgressBar
                     android:id="@+id/pbDecision"
