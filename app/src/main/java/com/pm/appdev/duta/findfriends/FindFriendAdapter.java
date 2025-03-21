@@ -15,8 +15,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.pm.appdev.duta.R;
 
 import java.util.HashMap;
@@ -28,11 +31,14 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
     private Context context;
     private List<FindFriendModel> findFriendModelList;
     private DatabaseReference friendRequestDatabase;
+    private DatabaseReference usersDatabase; // Add this line
     private FirebaseUser currentUser;
 
-    public FindFriendAdapter(Context context, List<FindFriendModel> findFriendModelList) {
+    // Update constructor to accept usersDatabase
+    public FindFriendAdapter(Context context, List<FindFriendModel> findFriendModelList, DatabaseReference usersDatabase) {
         this.context = context;
         this.findFriendModelList = findFriendModelList;
+        this.usersDatabase = usersDatabase; // Initialize usersDatabase
         this.currentUser = FirebaseAuth.getInstance().getCurrentUser();
         this.friendRequestDatabase = FirebaseDatabase.getInstance().getReference("FriendRequests");
     }
@@ -67,56 +73,120 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
         holder.btnCancelRequest.setOnClickListener(view -> cancelFriendRequest(friendModel, holder));
     }
 
+
     private void sendFriendRequest(FindFriendModel friendModel, FindFriendViewHolder holder) {
         String receiverUserId = friendModel.getUserId();
         holder.btnSendRequest.setVisibility(View.GONE);
         holder.pbRequest.setVisibility(View.VISIBLE);
 
-        // Update Firebase FriendRequests node
-        Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put(currentUser.getUid() + "/" + receiverUserId + "/requestType", "sent");
-        requestMap.put(receiverUserId + "/" + currentUser.getUid() + "/requestType", "received");
+        // Retrieve the receiver's Firebase UID
+        usersDatabase.child(receiverUserId).child("uid").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    String receiverUid = dataSnapshot.getValue(String.class);
 
-        friendRequestDatabase.updateChildren(requestMap).addOnCompleteListener(task -> {
-            holder.pbRequest.setVisibility(View.GONE);
-            if (task.isSuccessful()) {
-                Toast.makeText(context, "Friend request sent!", Toast.LENGTH_SHORT).show();
-                friendModel.setRequestSent(true);
-                notifyDataSetChanged();
-            } else {
+                    // Check if sender and receiver IDs are the same
+                    if (currentUser.getUid().equals(receiverUid)) {
+                        holder.pbRequest.setVisibility(View.GONE);
+                        holder.btnSendRequest.setVisibility(View.VISIBLE);
+                        Toast.makeText(context, "You cannot send a friend request to yourself!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Generate a unique request ID
+                    String requestId = friendRequestDatabase.push().getKey();
+
+                    // Create a new friend request entry
+                    Map<String, Object> requestMap = new HashMap<>();
+                    requestMap.put("senderId", currentUser.getUid());
+                    requestMap.put("receiverId", receiverUid);
+                    requestMap.put("status", "pending"); // Initial status is "pending"
+
+                    // Save the request to Firebase
+                    friendRequestDatabase.child(requestId).setValue(requestMap).addOnCompleteListener(task -> {
+                        holder.pbRequest.setVisibility(View.GONE);
+                        if (task.isSuccessful()) {
+                            Toast.makeText(context, "Friend request sent!", Toast.LENGTH_SHORT).show();
+                            friendModel.setRequestSent(true);
+                            notifyDataSetChanged();
+                        } else {
+                            holder.btnSendRequest.setVisibility(View.VISIBLE);
+                            Toast.makeText(context, "Failed to send request!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    holder.pbRequest.setVisibility(View.GONE);
+                    holder.btnSendRequest.setVisibility(View.VISIBLE);
+                    Toast.makeText(context, "User not found!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                holder.pbRequest.setVisibility(View.GONE);
                 holder.btnSendRequest.setVisibility(View.VISIBLE);
-                Toast.makeText(context, "Failed to send request!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
-
     private void cancelFriendRequest(FindFriendModel friendModel, FindFriendViewHolder holder) {
         String receiverUserId = friendModel.getUserId();
         holder.btnCancelRequest.setVisibility(View.GONE);
         holder.pbRequest.setVisibility(View.VISIBLE);
 
-        // Remove friend request from Firebase
-        friendRequestDatabase.child(currentUser.getUid()).child(receiverUserId).removeValue()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        friendRequestDatabase.child(receiverUserId).child(currentUser.getUid()).removeValue()
-                                .addOnCompleteListener(task1 -> {
-                                    holder.pbRequest.setVisibility(View.GONE);
-                                    if (task1.isSuccessful()) {
-                                        Toast.makeText(context, "Friend request canceled!", Toast.LENGTH_SHORT).show();
-                                        friendModel.setRequestSent(false);
-                                        notifyDataSetChanged();
-                                    } else {
-                                        holder.btnCancelRequest.setVisibility(View.VISIBLE);
-                                        Toast.makeText(context, "Failed to cancel request!", Toast.LENGTH_SHORT).show();
+        // Retrieve the receiver's Firebase UID
+        usersDatabase.child(receiverUserId).child("uid").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    String receiverUid = dataSnapshot.getValue(String.class);
+
+                    // Find and remove the friend request
+                    friendRequestDatabase.orderByChild("receiverId").equalTo(receiverUid)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot requestSnapshot) {
+                                    for (DataSnapshot snapshot : requestSnapshot.getChildren()) {
+                                        String senderId = snapshot.child("senderId").getValue(String.class);
+                                        if (senderId != null && senderId.equals(currentUser.getUid())) {
+                                            snapshot.getRef().removeValue().addOnCompleteListener(task -> {
+                                                holder.pbRequest.setVisibility(View.GONE);
+                                                if (task.isSuccessful()) {
+                                                    Toast.makeText(context, "Friend request canceled!", Toast.LENGTH_SHORT).show();
+                                                    friendModel.setRequestSent(false);
+                                                    notifyDataSetChanged();
+                                                } else {
+                                                    holder.btnCancelRequest.setVisibility(View.VISIBLE);
+                                                    Toast.makeText(context, "Failed to cancel request!", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                            break;
+                                        }
                                     }
-                                });
-                    } else {
-                        holder.btnCancelRequest.setVisibility(View.VISIBLE);
-                        holder.pbRequest.setVisibility(View.GONE);
-                        Toast.makeText(context, "Failed to cancel request!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    holder.btnCancelRequest.setVisibility(View.VISIBLE);
+                                    holder.pbRequest.setVisibility(View.GONE);
+                                    Toast.makeText(context, "Failed to cancel request!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                } else {
+                    holder.pbRequest.setVisibility(View.GONE);
+                    holder.btnCancelRequest.setVisibility(View.VISIBLE);
+                    Toast.makeText(context, "User not found!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                holder.btnCancelRequest.setVisibility(View.VISIBLE);
+                holder.pbRequest.setVisibility(View.GONE);
+                Toast.makeText(context, "Error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

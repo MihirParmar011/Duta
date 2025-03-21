@@ -1,149 +1,80 @@
-
 package com.pm.appdev.duta.requests;
-
 public class RequestModel {
+    private String requestId; // Add this field
     private String userId;
     private String userName;
     private String photoName;
+    private String status;
+    private long timestamp;
 
-    public RequestModel() {
-        // Default constructor required for Firebase
-    }
-
-    public RequestModel(String userId, String userName, String photoName) {
+    // Constructor
+    public RequestModel(String requestId, String userId, String userName, String photoName, String status, long timestamp) {
+        this.requestId = requestId;
         this.userId = userId;
         this.userName = userName;
         this.photoName = photoName;
+        this.status = status;
+        this.timestamp = timestamp;
+    }
+
+    // Getters and Setters
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public String getUserId() {
         return userId;
     }
 
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public String getUserName() {
         return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getPhotoName() {
         return photoName;
     }
+
+    public void setPhotoName(String photoName) {
+        this.photoName = photoName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+    @Override
+    public String toString() {
+        return "RequestModel{" +
+                "requestId='" + requestId + '\'' +
+                ", userId='" + userId + '\'' +
+                ", userName='" + userName + '\'' +
+                ", photoName='" + photoName + '\'' +
+                ", status='" + status + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
+    }
+
 }
-//package com.pm.appdev.duta.requests;
-//
-//public class RequestModel {
-//    private String userId;
-//    private String userName;
-//    private String photoName;
-//
-//    // Default constructor required for Firebase
-//    public RequestModel() {
-//    }
-//
-//    public RequestModel(String userId, String userName, String photoName) {
-//        this.userId = userId;
-//        this.userName = userName;
-//        this.photoName = photoName;
-//    }
-//
-//    // Getters
-//    public String getUserId() {
-//        return userId;
-//    }
-//
-//    public String getUserName() {
-//        return userName;
-//    }
-//
-//    public String getPhotoName() {
-//        return photoName;
-//    }
-//
-//    // Setters (Optional: Only if you need to modify values after object creation)
-//    public void setUserId(String userId) {
-//        this.userId = userId;
-//    }
-//
-//    public void setUserName(String userName) {
-//        this.userName = userName;
-//    }
-//
-//    public void setPhotoName(String photoName) {
-//        this.photoName = photoName;
-//    }
-//}
-
-
-//package com.pm.appdev.duta.requests;
-//
-//
-//public class RequestModel {
-//    private String userName;
-//    private String photoUrl;
-//    private String userId;
-//    private boolean requestReceived;
-//
-//    public RequestModel(String userId, String userName, String photoName) {
-//        // Default constructor required for Firebase
-//    }
-//
-//    public RequestModel(String userName, String photoUrl, String userId, boolean requestReceived) {
-//        this.userName = userName;
-//        this.photoUrl = photoUrl;
-//        this.userId = userId;
-//        this.requestReceived = requestReceived;
-//    }
-//
-//    public String getUserName() {
-//        return userName;
-//    }
-//
-//    public String getPhotoUrl() {
-//        return photoUrl;
-//    }
-//
-//    public String getUserId() {
-//        return userId;
-//    }
-//
-//    public boolean isRequestReceived() {
-//        return requestReceived;
-//    }
-//
-//    public void setRequestReceived(boolean requestReceived) {
-//        this.requestReceived = requestReceived;
-//    }
-//    public String getPhotoName() {  // ✅ FIX: Add this method
-//        String photoName = null;
-//        return photoName;
-//    }
-//}
-
-//package com.pm.appdev.duta.requests;
-//
-//public class RequestModel {
-//    private String userName;
-//    private String photoUrl;
-//    private String userId;
-//
-//    public RequestModel() {
-//        // Default constructor required for Firebase
-//    }
-//
-//    public RequestModel(String userName, String photoUrl, String userId) {
-//        this.userName = userName;
-//        this.photoUrl = photoUrl;
-//        this.userId = userId;
-//    }
-//
-//    public String getUserName() {
-//        return userName;
-//    }
-//
-//    public String getPhotoUrl() {
-//        return photoUrl;
-//    }
-//
-//    public String getUserId() {
-//        return userId;
-//    }
-//}
