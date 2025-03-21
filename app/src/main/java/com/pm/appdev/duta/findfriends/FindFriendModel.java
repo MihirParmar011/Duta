@@ -1,20 +1,21 @@
 package com.pm.appdev.duta.findfriends;
 
-import com.google.firebase.database.Exclude;
-
 public class FindFriendModel {
     private String userName;
     private String photoName;
-    private String userId;
+    private String userId; // Custom userId (e.g., "Mihir1101")
+    private String uid; // Firebase UID
     private boolean requestSent;
 
-    public FindFriendModel(String userName, String photoName, String userId, boolean requestSent) {
+    public FindFriendModel(String userName, String photoName, String userId, String uid, boolean requestSent) {
         this.userName = userName;
         this.photoName = photoName;
         this.userId = userId;
+        this.uid = uid;
         this.requestSent = requestSent;
     }
 
+    // Getters and setters
     public String getUserName() {
         return userName;
     }
@@ -37,6 +38,14 @@ public class FindFriendModel {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public boolean isRequestSent() {

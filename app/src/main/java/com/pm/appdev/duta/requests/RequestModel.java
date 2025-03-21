@@ -1,18 +1,21 @@
 package com.pm.appdev.duta.requests;
+
 public class RequestModel {
-    private String requestId; // Add this field
-    private String userId;
-    private String userName;
-    private String photoName;
-    private String status;
-    private long timestamp;
+    private String requestId; // Unique ID for the request
+    private String senderUid; // Firebase UID of the sender
+    private String senderUserId; // Custom user ID of the sender (e.g., "Mihir1101")
+    private String receiverUid; // Firebase UID of the receiver
+    private String receiverUserId; // Custom user ID of the receiver (e.g., "Kano1101")
+    private String status; // Status of the request (e.g., "pending", "accepted", "denied")
+    private long timestamp; // Timestamp of the request
 
     // Constructor
-    public RequestModel(String requestId, String userId, String userName, String photoName, String status, long timestamp) {
+    public RequestModel(String requestId, String senderUid, String senderUserId, String receiverUid, String receiverUserId, String status, long timestamp) {
         this.requestId = requestId;
-        this.userId = userId;
-        this.userName = userName;
-        this.photoName = photoName;
+        this.senderUid = senderUid;
+        this.senderUserId = senderUserId;
+        this.receiverUid = receiverUid;
+        this.receiverUserId = receiverUserId;
         this.status = status;
         this.timestamp = timestamp;
     }
@@ -26,28 +29,36 @@ public class RequestModel {
         this.requestId = requestId;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getSenderUid() {
+        return senderUid;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setSenderUid(String senderUid) {
+        this.senderUid = senderUid;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getSenderUserId() {
+        return senderUserId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setSenderUserId(String senderUserId) {
+        this.senderUserId = senderUserId;
     }
 
-    public String getPhotoName() {
-        return photoName;
+    public String getReceiverUid() {
+        return receiverUid;
     }
 
-    public void setPhotoName(String photoName) {
-        this.photoName = photoName;
+    public void setReceiverUid(String receiverUid) {
+        this.receiverUid = receiverUid;
+    }
+
+    public String getReceiverUserId() {
+        return receiverUserId;
+    }
+
+    public void setReceiverUserId(String receiverUserId) {
+        this.receiverUserId = receiverUserId;
     }
 
     public String getStatus() {
@@ -65,16 +76,17 @@ public class RequestModel {
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
+
     @Override
     public String toString() {
         return "RequestModel{" +
                 "requestId='" + requestId + '\'' +
-                ", userId='" + userId + '\'' +
-                ", userName='" + userName + '\'' +
-                ", photoName='" + photoName + '\'' +
+                ", senderUid='" + senderUid + '\'' +
+                ", senderUserId='" + senderUserId + '\'' +
+                ", receiverUid='" + receiverUid + '\'' +
+                ", receiverUserId='" + receiverUserId + '\'' +
                 ", status='" + status + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
     }
-
 }

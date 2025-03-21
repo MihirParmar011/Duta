@@ -25,6 +25,7 @@ import com.pm.appdev.duta.R;
 
 import java.util.ArrayList;
 import java.util.List;
+
 public class RequestsFragment extends Fragment {
 
     private RecyclerView rvRequests;
@@ -81,7 +82,7 @@ public class RequestsFragment extends Fragment {
         Log.d("RequestsFragment", "Fetching requests for user: " + currentUser.getUid());
 
         // Query requests where the current user is the receiver
-        friendRequestsDatabase.orderByChild("receiverId").equalTo(currentUser.getUid())
+        friendRequestsDatabase.orderByChild("receiverUid").equalTo(currentUser.getUid())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -97,7 +98,10 @@ public class RequestsFragment extends Fragment {
 
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
                             String requestId = ds.getKey(); // Get the request ID
-                            String senderUserId = ds.child("senderId").getValue(String.class);
+                            String senderUid = ds.child("senderUid").getValue(String.class);
+                            String senderUserId = ds.child("senderUserId").getValue(String.class);
+                            String receiverUid = ds.child("receiverUid").getValue(String.class);
+                            String receiverUserId = ds.child("receiverUserId").getValue(String.class);
                             String status = ds.child("status").getValue(String.class);
 
                             // Only show pending requests
@@ -105,21 +109,29 @@ public class RequestsFragment extends Fragment {
                                 Log.d("RequestsFragment", "Request received from: " + senderUserId);
 
                                 // Fetch sender's details from the Users node
-                                usersDatabase.child(senderUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+                                usersDatabase.child(senderUid).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot userSnapshot) {
                                         if (!userSnapshot.exists()) {
-                                            Log.e("RequestsFragment", "User details not found for: " + senderUserId);
+                                            Log.e("RequestsFragment", "User details not found for: " + senderUid);
                                             return;
                                         }
 
-                                        // Fetch the name field
+                                        // Fetch the name and photo fields
                                         String userName = userSnapshot.child("name").getValue(String.class);
                                         String photoName = userSnapshot.child("photo").exists() ?
                                                 userSnapshot.child("photo").getValue(String.class) : "";
 
                                         Log.d("RequestsFragment", "Adding request from: " + userName);
-                                        requestModelList.add(new RequestModel(requestId, senderUserId, userName, photoName, status, System.currentTimeMillis()));
+                                        requestModelList.add(new RequestModel(
+                                                requestId, // requestId
+                                                senderUid, // senderUid
+                                                senderUserId, // senderUserId
+                                                receiverUid, // receiverUid
+                                                receiverUserId, // receiverUserId
+                                                status, // status
+                                                System.currentTimeMillis() // timestamp
+                                        ));
                                         adapter.notifyDataSetChanged();
                                         tvEmptyRequestsList.setVisibility(View.GONE);
                                     }
