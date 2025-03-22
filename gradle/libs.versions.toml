@@ -1,69 +1,72 @@
 [versions]
-activityVersion = "1.8.0"
-agp = "8.8.1"
-androidxJunit = "1.1.1"
-appcompatVersion = "1.1.0"
+activityVersion = "1.10.1"
+agp = "8.8.2"
+androidxJunit = "1.2.1"
+appcompatVersion = "1.7.0"
+carUiLibVersion = "2.6.0"
 circularimageview = "3.0.2"
-constraintlayoutVersion = "1.1.3"
-espressoCoreVersion = "3.2.0"
-firebaseAuth = "21.0.1"
-firebaseBom = "33.9.0"
-firebaseBomVersion = "32.7.0"
-firebaseDatabase = "20.0.2"
-firebaseMessaging = "24.1.0"
-firebaseStorage = "20.0.0"
-firebaseStorageVersion = "20.3.0'"
+constraintlayoutVersion = "2.2.1"
+espressoCoreVersion = "3.6.1"
+firebaseAuth = "23.2.0"
+firebaseBom = "33.11.0"  # Use the latest Firebase BOM version
+firebaseDatabase = "21.0.0"
+firebaseFirestore = "25.1.3"
+firebaseMessaging = "24.1.1"
+firebaseStorage = "21.0.1"
 fragment = "1.8.6"
 glide = "4.9.0"
 junit = "4.13.2"
-junitJunit = "4.12"
+junitJunit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 legacySupportV4 = "1.0.0"
 material = "1.12.0"
-activity = "1.9.3"
-constraintlayout = "2.1.4"
-materialVersion = "1.1.0"
-smartReply = "16.1.1"
+activity = "1.10.1"
+constraintlayout = "2.2.1"
+materialVersion = "1.12.0"
+smartReply = "17.0.4"
 volley = "1.2.1"
 recyclerview = "1.4.0"
 carUiLib = "2.6.0"
+#swiperefreshlayout = "1.1.0"
+swiperefreshlayout = "1.1.0"
 
 [libraries]
 activity-v180 = { module = "androidx.activity:activity", version.ref = "activityVersion" }
 appcompat-v110 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
+car-ui-lib-v250 = { module = "com.android.car.ui:car-ui-lib", version.ref = "carUiLibVersion" }
 circularimageview = { module = "com.mikhaellopez:circularimageview", version.ref = "circularimageview" }
 constraintlayout-v113 = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
 espresso-core-v320 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-firebase-bom-v3270 = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
 firebase-database = { module = "com.google.firebase:firebase-database", version.ref = "firebaseDatabase" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
 firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
-firebase-storage-v2030 = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorageVersion" }
 fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 google-firebase-storage = { module = "com.google.firebase:firebase-storage" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+junit = { module = "junit:junit", version.ref = "junit" }
+ext-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }
+espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 junit-v111 = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
 junit-v412 = { module = "junit:junit", version.ref = "junitJunit" }
 legacy-support-v4 = { module = "androidx.legacy:legacy-support-v4", version.ref = "legacySupportV4" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+activity = { module = "androidx.activity:activity", version.ref = "activity" }
+constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 material-v110 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
 smart-reply = { module = "com.google.mlkit:smart-reply", version.ref = "smartReply" }
 volley = { module = "com.android.volley:volley", version.ref = "volley" }
-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
-car-ui-lib = { group = "com.android.car.ui", name = "car-ui-lib", version.ref = "carUiLib" }
+recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
+car-ui-lib = { module = "com.android.car.ui:car-ui-lib", version.ref = "carUiLib" }
+#swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

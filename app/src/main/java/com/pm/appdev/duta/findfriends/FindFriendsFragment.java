@@ -1,5 +1,6 @@
 package com.pm.appdev.duta.findfriends;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -76,6 +77,7 @@ public class FindFriendsFragment extends Fragment {
                 return false;
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (TextUtils.isEmpty(newText)) {
@@ -101,12 +103,13 @@ public class FindFriendsFragment extends Fragment {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
                         String fullName = userSnapshot.child("name").getValue(String.class);
-                        String photoUrl = userSnapshot.child("photo").getValue(String.class);
+                        String photoUrl = userSnapshot.child("photo").getValue(String.class); // Base64 image string
                         String receiverUid = userSnapshot.child("uid").getValue(String.class); // Get Firebase UID
 
                         // Check if a friend request already exists
                         friendRequestDatabase.orderByChild("receiverId").equalTo(receiverUid)
                                 .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @SuppressLint("NotifyDataSetChanged")
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot requestSnapshot) {
                                         boolean requestSent = false;

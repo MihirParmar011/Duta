@@ -1,5 +1,7 @@
 package com.pm.appdev.duta.requests;
 
+import androidx.annotation.NonNull;
+
 public class RequestModel {
     private String requestId; // Unique ID for the request
     private String senderUid; // Firebase UID of the sender
@@ -77,6 +79,7 @@ public class RequestModel {
         this.timestamp = timestamp;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "RequestModel{" +

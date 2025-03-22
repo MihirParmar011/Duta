@@ -1,6 +1,9 @@
 package com.pm.appdev.duta.findfriends;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,15 +29,14 @@ import com.pm.appdev.duta.R;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.FindFriendViewHolder> {
 
-    private Context context;
-    private List<FindFriendModel> findFriendModelList;
-    private DatabaseReference friendRequestDatabase;
-    private DatabaseReference usersDatabase; // Add this line
-    private FirebaseUser currentUser;
+    private final Context context;
+    private final List<FindFriendModel> findFriendModelList;
+    private final DatabaseReference friendRequestDatabase;
+    private final DatabaseReference usersDatabase; // Add this line
+    private final FirebaseUser currentUser;
 
     // Update constructor to accept usersDatabase
     public FindFriendAdapter(Context context, List<FindFriendModel> findFriendModelList, DatabaseReference usersDatabase) {
@@ -57,13 +60,19 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
 
         holder.tvFullName.setText(friendModel.getUserName());
 
-        Glide.with(context)
-                .load(friendModel.getPhotoName())
-                .placeholder(R.drawable.default_profile)
-                .into(holder.ivProfile);
+        // Decode Base64 image and set it to the ImageView
+        String base64Image = friendModel.getPhotoName();
+        if (base64Image != null && !base64Image.isEmpty()) {
+            Bitmap bitmap = decodeBase64ToBitmap(base64Image);
+            holder.ivProfile.setImageBitmap(bitmap);
+        } else {
+            // Set a default image if no photo is available
+            holder.ivProfile.setImageResource(R.drawable.default_profile);
+        }
 
         friendRequestDatabase.orderByChild("senderUid").equalTo(currentUser.getUid())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @SuppressLint("NotifyDataSetChanged")
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         boolean alreadyRequested = false;
@@ -92,6 +101,12 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
 
         holder.btnSendRequest.setOnClickListener(view -> sendFriendRequest(friendModel, holder));
         holder.btnCancelRequest.setOnClickListener(view -> cancelFriendRequest(friendModel, holder));
+    }
+
+    // Method to decode Base64 string to Bitmap
+    private Bitmap decodeBase64ToBitmap(String base64Image) {
+        byte[] decodedBytes = android.util.Base64.decode(base64Image, android.util.Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
     }
 
     private void sendFriendRequest(FindFriendModel friendModel, FindFriendViewHolder holder) {
@@ -124,7 +139,7 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
                         requestMap.put("senderUserId", senderUserId);
                         requestMap.put("receiverUid", receiverUid);
                         requestMap.put("receiverUserId", receiverUserId);
-                        requestMap.put("status", "pending");
+                        requestMap.put("status", "Requested");
                         requestMap.put("timestamp", System.currentTimeMillis());
 
                         friendRequestDatabase.child(requestId).setValue(requestMap).addOnCompleteListener(task -> {
@@ -174,6 +189,7 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
 
         friendRequestDatabase.orderByChild("senderUid").equalTo(currentUser.getUid())
                 .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @SuppressLint("NotifyDataSetChanged")
                     @Override
                     public void onDataChange(@NonNull DataSnapshot requestSnapshot) {
                         boolean requestFound = false;
@@ -216,10 +232,11 @@ public class FindFriendAdapter extends RecyclerView.Adapter<FindFriendAdapter.Fi
     }
 
     public static class FindFriendViewHolder extends RecyclerView.ViewHolder {
-        private ImageView ivProfile;
-        private TextView tvFullName;
-        private Button btnSendRequest, btnCancelRequest;
-        private ProgressBar pbRequest;
+        private final ImageView ivProfile;
+        private final TextView tvFullName;
+        private final Button btnSendRequest;
+        private final Button btnCancelRequest;
+        private final ProgressBar pbRequest;
 
         public FindFriendViewHolder(@NonNull View itemView) {
             super(itemView);

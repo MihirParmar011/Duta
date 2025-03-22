@@ -1,5 +1,6 @@
 package com.pm.appdev.duta.requests;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,7 +25,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.pm.appdev.duta.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RequestsFragment extends Fragment {
 
@@ -87,7 +90,7 @@ public class RequestsFragment extends Fragment {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         progressBar.setVisibility(View.GONE);
-                        requestModelList.clear();
+                        requestModelList.clear(); // Clear the list before adding new requests
 
                         if (!dataSnapshot.exists()) {
                             Log.d("RequestsFragment", "No requests found for user: " + currentUser.getUid());
@@ -95,6 +98,9 @@ public class RequestsFragment extends Fragment {
                             adapter.notifyDataSetChanged();
                             return;
                         }
+
+                        // Map to store sender UIDs and their corresponding requests
+                        Map<String, RequestModel> senderUidToRequestMap = new HashMap<>();
 
                         for (DataSnapshot ds : dataSnapshot.getChildren()) {
                             String requestId = ds.getKey(); // Get the request ID
@@ -105,47 +111,40 @@ public class RequestsFragment extends Fragment {
                             String status = ds.child("status").getValue(String.class);
 
                             // Only show pending requests
-                            if ("pending".equals(status)) {
+                            if ("Requested".equals(status)) {
                                 Log.d("RequestsFragment", "Request received from: " + senderUserId);
-
-                                // Fetch sender's details from the Users node
-                                usersDatabase.child(senderUid).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot userSnapshot) {
-                                        if (!userSnapshot.exists()) {
-                                            Log.e("RequestsFragment", "User details not found for: " + senderUid);
-                                            return;
-                                        }
-
-                                        // Fetch the name and photo fields
-                                        String userName = userSnapshot.child("name").getValue(String.class);
-                                        String photoName = userSnapshot.child("photo").exists() ?
-                                                userSnapshot.child("photo").getValue(String.class) : "";
-
-                                        Log.d("RequestsFragment", "Adding request from: " + userName);
-                                        requestModelList.add(new RequestModel(
-                                                requestId, // requestId
-                                                senderUid, // senderUid
-                                                senderUserId, // senderUserId
-                                                receiverUid, // receiverUid
-                                                receiverUserId, // receiverUserId
-                                                status, // status
-                                                System.currentTimeMillis() // timestamp
-                                        ));
-                                        adapter.notifyDataSetChanged();
-                                        tvEmptyRequestsList.setVisibility(View.GONE);
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                                        Log.e("RequestsFragment", "Error fetching user details: " + databaseError.getMessage());
-                                        Toast.makeText(getActivity(), "Error fetching user details", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                                senderUidToRequestMap.put(senderUid, new RequestModel(
+                                        requestId, senderUid, senderUserId, receiverUid, receiverUserId, status, System.currentTimeMillis()
+                                ));
                             }
                         }
 
-                        if (requestModelList.isEmpty()) {
+                        // Fetch sender details in a single query
+                        if (!senderUidToRequestMap.isEmpty()) {
+                            usersDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @SuppressLint("NotifyDataSetChanged")
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot userSnapshot) {
+                                    for (DataSnapshot user : userSnapshot.getChildren()) {
+                                        String senderUid = user.getKey();
+                                        if (senderUidToRequestMap.containsKey(senderUid)) {
+                                            RequestModel request = senderUidToRequestMap.get(senderUid);
+                                            if (request != null) {
+                                                requestModelList.add(request);
+                                            }
+                                        }
+                                    }
+                                    adapter.notifyDataSetChanged();
+                                    tvEmptyRequestsList.setVisibility(requestModelList.isEmpty() ? View.VISIBLE : View.GONE);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    Log.e("RequestsFragment", "Error fetching user details: " + databaseError.getMessage());
+                                    Toast.makeText(getActivity(), "Error fetching user details", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else {
                             tvEmptyRequestsList.setVisibility(View.VISIBLE);
                         }
                     }

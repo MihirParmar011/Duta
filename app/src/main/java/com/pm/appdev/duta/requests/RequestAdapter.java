@@ -2,6 +2,8 @@ package com.pm.appdev.duta.requests;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -91,7 +93,7 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestV
             public void onDataChange(@NonNull DataSnapshot userSnapshot) {
                 if (userSnapshot.exists()) {
                     String userName = userSnapshot.child("name").getValue(String.class);
-                    String photoUrl = userSnapshot.child("photo").getValue(String.class);
+                    String photoBase64 = userSnapshot.child("photo").getValue(String.class);
 
                     if (userName != null && !userName.isEmpty()) {
                         holder.tvFullName.setText(userName);
@@ -99,12 +101,14 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestV
                         holder.tvFullName.setText("Unknown User");
                     }
 
-                    if (photoUrl != null && !photoUrl.isEmpty()) {
-                        Glide.with(context)
-                                .load(photoUrl)
-                                .placeholder(R.drawable.default_profile)
-                                .error(R.drawable.default_profile)
-                                .into(holder.ivProfile);
+                    if (photoBase64 != null && !photoBase64.isEmpty()) {
+                        // Decode the Base64 string to a Bitmap
+                        Bitmap bitmap = decodeBase64ToBitmap(photoBase64);
+                        if (bitmap != null) {
+                            holder.ivProfile.setImageBitmap(bitmap);
+                        } else {
+                            holder.ivProfile.setImageResource(R.drawable.default_profile);
+                        }
                     } else {
                         holder.ivProfile.setImageResource(R.drawable.default_profile);
                     }
@@ -118,6 +122,17 @@ public class RequestAdapter extends RecyclerView.Adapter<RequestAdapter.RequestV
                 setUnknownUser(holder);
             }
         });
+    }
+
+    // Method to decode Base64 string to Bitmap
+    private Bitmap decodeBase64ToBitmap(String base64Image) {
+        try {
+            byte[] decodedBytes = android.util.Base64.decode(base64Image, android.util.Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        } catch (IllegalArgumentException e) {
+            Log.e("RequestAdapter", "Failed to decode Base64 string: " + e.getMessage());
+            return null;
+        }
     }
 
     private void setUnknownUser(RequestViewHolder holder) {

@@ -28,9 +28,12 @@ android {
             )
         }
     }
+
+    // Enable viewBinding
     viewBinding {
-        var enabled = true
+        enable = true
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -38,33 +41,30 @@ android {
 }
 
 dependencies {
-
+    // AndroidX and Material Design
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
-    implementation(libs.car.ui.lib)
+    implementation(libs.swiperefreshlayout)
+    implementation(libs.swiperefreshlayout)
+
+    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    // Import the Firebase BoM
+    implementation(platform(libs.firebase.bom))
 
-    implementation(libs.appcompat.v110)
-    implementation(libs.constraintlayout.v113)
+    // Declare Firebase dependencies without versions
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage)
-    implementation(libs.legacy.support.v4)
+    implementation(libs.firebase.firestore)
     implementation(libs.firebase.messaging)
-    implementation(libs.firebase.storage.v2030)
-
-    testImplementation(libs.junit.v412)
-    androidTestImplementation(libs.junit.v111)
-    androidTestImplementation(libs.espresso.core.v320)
-
-    implementation(libs.material.v110)
+    implementation(libs.google.firebase.analytics)
 
     // Volley
     implementation(libs.volley)
@@ -77,11 +77,11 @@ dependencies {
 
     // ML Kit Smart Reply
     implementation(libs.smart.reply)
+
+    // AndroidX Activity and Fragment
     implementation(libs.activity.v180)
     implementation(libs.fragment)
 
-    implementation(platform(libs.firebase.bom.v3270))
-    implementation(libs.google.firebase.storage)
-    implementation(libs.google.firebase.analytics)
-    implementation ("com.android.car.ui:car-ui-lib:2.5.0")
+    // Car UI Library
+    implementation(libs.car.ui.lib)
 }
