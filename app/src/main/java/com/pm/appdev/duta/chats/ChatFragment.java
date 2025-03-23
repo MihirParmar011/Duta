@@ -2,63 +2,38 @@ package com.pm.appdev.duta.chats;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.pm.appdev.duta.Common.NodeNames;
-import com.pm.appdev.duta.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-
+import com.google.firebase.database.*;
+import com.pm.appdev.duta.R;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
 public class ChatFragment extends Fragment {
 
     private RecyclerView rvChatList;
     private View progressBar;
     private TextView tvEmptyChatList;
-    private  ChatListAdapter chatListAdapter;
+    private ChatListAdapter chatListAdapter;
     private List<ChatListModel> chatListModelList;
-
     private DatabaseReference databaseReferenceChats, databaseReferenceUsers;
     private FirebaseUser currentUser;
 
-    private ChildEventListener childEventListener;
-    private Query query;
-
-    private  List<String> userIds;
-
-    public ChatFragment() {
-        // Required empty public constructor
-    }
-
+    public ChatFragment() { }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
 
@@ -68,120 +43,65 @@ public class ChatFragment extends Fragment {
 
         rvChatList = view.findViewById(R.id.rvChats);
         tvEmptyChatList = view.findViewById(R.id.tvEmptyChatList);
-
-        userIds = new ArrayList<>();
-        chatListModelList = new ArrayList<>();
-        chatListAdapter = new ChatListAdapter(getActivity(), chatListModelList);
-
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        linearLayoutManager.setReverseLayout(true);
-        linearLayoutManager.setStackFromEnd(true);
-        rvChatList.setLayoutManager(linearLayoutManager);
-
-        rvChatList.setAdapter(chatListAdapter);
-
         progressBar = view.findViewById(R.id.progressBar);
 
-        databaseReferenceUsers = FirebaseDatabase.getInstance().getReference().child(NodeNames.USERS);
+        chatListModelList = new ArrayList<>();
+        chatListAdapter = new ChatListAdapter(getActivity(), chatListModelList);
+        rvChatList.setLayoutManager(new LinearLayoutManager(getActivity()));
+        rvChatList.setAdapter(chatListAdapter);
+
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        databaseReferenceChats= FirebaseDatabase.getInstance().getReference().child(NodeNames.CHATS).child(currentUser.getUid());
+        databaseReferenceUsers = FirebaseDatabase.getInstance().getReference("Users");
+        databaseReferenceChats = FirebaseDatabase.getInstance().getReference("Chats").child(currentUser.getUid());
 
-        query = databaseReferenceChats.orderByChild(NodeNames.TIME_STAMP);
-
-        childEventListener = new ChildEventListener() {
+        databaseReferenceChats.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                updateList(dataSnapshot, true, dataSnapshot.getKey());
-            }
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                chatListModelList.clear();
 
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                updateList(dataSnapshot, false, dataSnapshot.getKey());
-            }
+                for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
+                    final String userId = chatSnapshot.getKey();  // ✅ Make it final
+                    Long timestampValue = chatSnapshot.child("timestamp").getValue(Long.class);
+                    final long timestamp = (timestampValue != null) ? timestampValue : System.currentTimeMillis();  // ✅ Prevent NPE
 
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                    Log.d("ChatFragment", "Fetching user details for UID: " + userId);
 
-            }
+                    databaseReferenceUsers.orderByChild("uid").equalTo(userId)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @SuppressLint("NotifyDataSetChanged")
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot userSnapshot) {
+                                    if (userSnapshot.exists()) {
+                                        for (DataSnapshot data : userSnapshot.getChildren()) {
+                                            String name = data.child("name").getValue(String.class);
+                                            String photo = data.child("photo").getValue(String.class);
 
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                                            Log.d("ChatFragment", "User Found: " + name);
 
-            }
+                                            chatListModelList.add(new ChatListModel(
+                                                    userId, name, photo, "0", "Last message", timestamp)); // ✅ Use correct `timestamp`
+                                            chatListAdapter.notifyDataSetChanged();
+                                        }
+                                    } else {
+                                        Log.e("ChatFragment", "User data not found for UID: " + userId);
+                                    }
+                                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-
-        query.addChildEventListener(childEventListener);
-
-        progressBar.setVisibility(View.VISIBLE);
-        tvEmptyChatList.setVisibility(View.VISIBLE);
-
-    }
-
-
-    private  void updateList(DataSnapshot dataSnapshot, final boolean isNew, final String userId)
-    {
-        progressBar.setVisibility(View.GONE);
-        tvEmptyChatList.setVisibility(View.GONE);
-
-        final String  lastMessage, lastMessageTime, unreadCount;
-
-        if(dataSnapshot.child(NodeNames.LAST_MESSAGE).getValue()!=null)
-            lastMessage = dataSnapshot.child(NodeNames.LAST_MESSAGE).getValue().toString();
-        else
-            lastMessage = "";
-
-        if(dataSnapshot.child(NodeNames.LAST_MESSAGE_TIME).getValue()!=null)
-            lastMessageTime = dataSnapshot.child(NodeNames.LAST_MESSAGE_TIME).getValue().toString();
-        else
-            lastMessageTime="";
-
-        unreadCount=dataSnapshot.child(NodeNames.UNREAD_COUNT).getValue()==null?
-                "0":dataSnapshot.child(NodeNames.UNREAD_COUNT).getValue().toString();
-
-        databaseReferenceUsers.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String fullName = dataSnapshot.child(NodeNames.NAME).getValue()!=null?
-                        dataSnapshot.child(NodeNames.NAME).getValue().toString():"";
-
-                /*String photoName = dataSnapshot.child(NodeNames.PHOTO).getValue()!=null?
-                        dataSnapshot.child(NodeNames.PHOTO).getValue().toString():"";*/
-                String photoName  = userId +".jpg";
-
-                ChatListModel chatListModel = new ChatListModel(userId, fullName, photoName,unreadCount,lastMessage,lastMessageTime);
-
-                if(isNew) {
-                    chatListModelList.add(chatListModel);
-                    userIds.add(userId);
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    Log.e("ChatFragment", "Database Error: " + error.getMessage());
+                                }
+                            });
                 }
-                else {
-                    int indexOfClickedUser = userIds.indexOf(userId) ;
-                    chatListModelList.set(indexOfClickedUser, chatListModel);
-                }
-
-                chatListAdapter.notifyDataSetChanged();
-
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                Toast.makeText(getActivity(),  getActivity().getString(R.string.failed_to_fetch_chat_list, databaseError.getMessage())
-                        , Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ChatFragment", "Database Error: " + error.getMessage());
             }
         });
 
-    }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        query.removeEventListener(childEventListener);
+
     }
 }

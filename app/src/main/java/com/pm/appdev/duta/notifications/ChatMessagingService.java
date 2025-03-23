@@ -1,5 +1,6 @@
 package com.pm.appdev.duta.notifications;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -35,6 +36,7 @@ public class ChatMessagingService extends FirebaseMessagingService {
 
     }
 
+    @SuppressLint("SuspiciousIndentation")
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
