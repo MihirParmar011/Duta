@@ -1,20 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@android:color/black"
+    tools:ignore="ExtraText">
 
+    <!-- Main Image View -->
     <ImageView
         android:id="@+id/ivFullScreen"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_image_placeholder"/> <!-- Added default placeholder -->
+        android:src="@android:drawable/ic_menu_gallery"
+    />
 
+    <!-- Loading Indicator -->
     <ProgressBar
         android:id="@+id/pbLoading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:indeterminateTint="@android:color/white"/>
-</FrameLayout>
+        android:indeterminateTint="@android:color/white"
+        android:visibility="visible"/>
+
+    <!-- Material Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#80000000"
+    android:elevation="4dp"
+    app:titleTextColor="@android:color/white">
+
+    <!-- Back Button -->
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="12dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:backgroundTint="@color/white"/>
+
+    <!-- Spacer -->
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+
+    <!-- Action Buttons -->
+    <ImageButton
+        android:id="@+id/btnShare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="12dp"
+        android:src="@android:drawable/ic_menu_share"
+        android:backgroundTint="@color/white" />
+
+    <ImageButton
+        android:id="@+id/btnFavorite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="12dp"
+        android:src="@android:drawable/btn_star_big_off"
+        android:backgroundTint="@color/white"/>
+</com.google.android.material.appbar.MaterialToolbar>
+
+    <!-- Bottom Info Bar -->
+<LinearLayout
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_gravity="bottom"
+android:background="#80000000"
+android:orientation="horizontal"
+android:padding="16dp">
+
+<TextView
+    android:id="@+id/tvImageInfo"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:textColor="@android:color/white"
+    android:textSize="14sp"
+    android:text="@string/image_details"/>
+
+<ImageButton
+    android:id="@+id/btnDownload"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:src="@android:drawable/ic_menu_save"
+    android:backgroundTint="@color/white"/>
+</LinearLayout>
+
+    <!-- Error Message -->
+<TextView
+android:id="@+id/tvError"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_gravity="center"
+android:background="#80000000"
+android:gravity="center"
+android:padding="16dp"
+android:textColor="@android:color/white"
+android:textSize="16sp"
+android:visibility="gone"
+android:text="Error loading image"/>
+    </FrameLayout>
