@@ -5,7 +5,9 @@ androidxJunit = "1.2.1"
 appcompatVersion = "1.7.0"
 carUiLibVersion = "2.6.0"
 circularimageview = "3.0.2"
+compiler = "4.16.0"
 constraintlayoutVersion = "2.2.1"
+coreKtx = "1.15.0"
 espressoCoreVersion = "3.6.1"
 firebaseAuth = "23.2.0"
 firebaseBom = "33.11.0"  # Use the latest Firebase BOM version
@@ -14,7 +16,7 @@ firebaseFirestore = "25.1.3"
 firebaseMessaging = "24.1.1"
 firebaseStorage = "21.0.1"
 fragment = "1.8.6"
-glide = "4.9.0"
+glide = "4.16.0"
 junit = "4.13.2"
 junitJunit = "4.13.2"
 junitVersion = "1.2.1"
@@ -37,7 +39,9 @@ activity-v180 = { module = "androidx.activity:activity", version.ref = "activity
 appcompat-v110 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
 car-ui-lib-v250 = { module = "com.android.car.ui:car-ui-lib", version.ref = "carUiLibVersion" }
 circularimageview = { module = "com.mikhaellopez:circularimageview", version.ref = "circularimageview" }
+compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
 constraintlayout-v113 = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
+core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 espresso-core-v320 = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCoreVersion" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }

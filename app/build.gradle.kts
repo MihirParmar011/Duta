@@ -84,4 +84,7 @@ dependencies {
 
     // Car UI Library
     implementation(libs.car.ui.lib)
+
+    annotationProcessor (libs.compiler)
+    implementation (libs.core.ktx) // For FileProvider
 }

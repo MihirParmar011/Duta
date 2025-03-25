@@ -54,6 +54,7 @@
         <activity android:name=".selectfriend.SelectFriendActivity" />
 
         <activity android:name=".chats.ChatActivity" />
+        <activity android:name=".chats.FullScreenImageActivity" />
         <service
             android:name=".notifications.ChatMessagingService"
             android:permission="com.google.android.c2dm.permission.SEND"
@@ -64,5 +65,14 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
             </intent-filter>
         </service>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.pm.appdev.duta.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

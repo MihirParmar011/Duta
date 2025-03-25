@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
+
 import androidx.appcompat.view.ActionMode;
 
 import android.util.Base64;
@@ -29,10 +29,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pm.appdev.duta.FullScreenImageActivity;
+import com.pm.appdev.duta.Common.ImageRepository;
 import com.pm.appdev.duta.R;
 import com.pm.appdev.duta.Common.Constants;
-import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
@@ -42,12 +41,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import android.net.Uri;
+import java.io.IOException;
 
 public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.MessageViewHolder> {
 
-    private Context context;
-    private List<MessageModel> messageList;
-    private FirebaseAuth firebaseAuth;
+    private final Context context;
+    private final List<MessageModel> messageList;
 
     private ActionMode actionMode;
     private ConstraintLayout selectedView;
@@ -68,7 +68,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     @Override
     public void onBindViewHolder(@NonNull final MessagesAdapter.MessageViewHolder holder, int position) {
         MessageModel message = messageList.get(position);
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         String currentUserId = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
         String fromUserId = message.getMessageFrom();
 
@@ -95,10 +95,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         holder.clMessage.setTag(R.id.TAG_MESSAGE_ID, message.getMessageId());
         holder.clMessage.setTag(R.id.TAG_MESSAGE_TYPE, message.getMessageType());
 
-        holder.clMessage.setOnClickListener(view -> handleMessageClick(view));
+        holder.clMessage.setOnClickListener(this::handleMessageClick);
         holder.clMessage.setOnLongClickListener(view -> handleMessageLongClick(holder, view));
     }
 
+    @SuppressLint("SetTextI18n")
     private void bindSentMessage(MessageViewHolder holder, MessageModel message, String messageTime) {
         switch (message.getMessageType()) {
             case Constants.MESSAGE_TYPE_TEXT:
@@ -121,6 +122,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void bindReceivedMessage(MessageViewHolder holder, MessageModel message, String messageTime) {
         switch (message.getMessageType()) {
             case Constants.MESSAGE_TYPE_TEXT:
@@ -144,7 +146,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     }
 
     private void loadImage(String imageData, ImageView imageView, boolean isSent) {
-        imageView.setImageResource(isSent ? R.drawable.ic_image_placeholder : R.drawable.ic_image_placeholder);
+        imageView.setImageResource(R.drawable.ic_image_placeholder);
 
         new Thread(() -> {
             try {
@@ -165,6 +167,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         }).start();
     }
 
+    // In MessagesAdapter.java
     private void handleMessageClick(View view) {
         String messageType = view.getTag(R.id.TAG_MESSAGE_TYPE).toString();
         String messageContent = view.getTag(R.id.TAG_MESSAGE).toString();
@@ -172,9 +175,27 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         if (messageType.equals(Constants.MESSAGE_TYPE_VIDEO)) {
             playVideo(messageContent);
         } else if (messageType.equals(Constants.MESSAGE_TYPE_IMAGE)) {
-            Intent intent = new Intent(context, FullScreenImageActivity.class);
-            intent.putExtra("image", messageContent);
-            context.startActivity(intent);
+            // Decode the Base64 image in background thread
+            new Thread(() -> {
+                try {
+                    byte[] decodedString = Base64.decode(messageContent, Base64.DEFAULT);
+                    final Bitmap bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
+                    // Run on UI thread to start activity
+                    ((Activity) context).runOnUiThread(() -> {
+                        // Store bitmap in repository
+                        ImageRepository.setCurrentImage(bitmap);
+
+                        // Start FullScreenImageActivity
+                        Intent intent = new Intent(context, FullScreenImageActivity.class);
+                        context.startActivity(intent);
+                    });
+                } catch (Exception e) {
+                    ((Activity) context).runOnUiThread(() -> {
+                        Toast.makeText(context, "Failed to load image", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }).start();
         }
     }
 
@@ -300,7 +321,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         return messageList.size();
     }
 
-    public class MessageViewHolder extends RecyclerView.ViewHolder {
+    public static class MessageViewHolder extends RecyclerView.ViewHolder {
 
         private final LinearLayout llSent;
         private final LinearLayout llReceived;

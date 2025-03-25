@@ -6,34 +6,34 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <!-- WhatsApp-style Date Separator -->
-    <LinearLayout
-        android:id="@+id/llDateSeparator"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        <!-- WhatsApp-style Date Separator -->
+<!--        <LinearLayout-->
+<!--            android:id="@+id/llDateSeparator"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="8dp"-->
+<!--            android:layout_marginBottom="8dp"-->
+<!--            android:gravity="center"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:visibility="gone"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent">-->
 
-        <TextView
-            android:id="@+id/tvChatDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:text="Today"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:background="@drawable/date_background"
-            android:gravity="center"/>
-    </LinearLayout>
+<!--            <TextView-->
+<!--                android:id="@+id/tvChatDate"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:paddingStart="12dp"-->
+<!--                android:paddingEnd="12dp"-->
+<!--                android:paddingTop="4dp"-->
+<!--                android:paddingBottom="4dp"-->
+<!--                android:text="Today"-->
+<!--                android:textColor="@android:color/white"-->
+<!--                android:textSize="12sp"-->
+<!--                android:background="@drawable/date_background"-->
+<!--                android:gravity="center"/>-->
+<!--        </LinearLayout>-->
 
     <!-- Sent Message -->
     <LinearLayout
@@ -43,10 +43,10 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
         android:orientation="horizontal"
-        android:visibility="gone"
+        android:visibility="visible"
         android:background="@drawable/sent_message_background"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/llDateSeparator">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/tvSentMessage"
@@ -65,7 +65,7 @@
             android:layout_gravity="bottom"
             android:layout_marginEnd="4dp"
             android:textColor="@android:color/white"
-            android:textSize="10sp"
+            android:textSize="12sp"
             tools:text="09:00" />
     </LinearLayout>
 
@@ -80,7 +80,7 @@
         android:background="@drawable/sent_message_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/llSent"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <ImageView
             android:id="@+id/ivSent"
@@ -97,7 +97,7 @@
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="4dp"
             android:textColor="@android:color/white"
-            android:textSize="10sp"
+            android:textSize="12sp"
             tools:text="09:00" />
     </LinearLayout>
 
@@ -109,7 +109,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginStart="8dp"
         android:orientation="horizontal"
-        android:visibility="gone"
+        android:visibility="visible"
         android:background="@drawable/receive_message_background"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/llSentImage">
@@ -130,7 +130,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginStart="4dp"
-            android:textSize="10sp"
+            android:textSize="12sp"
             tools:text="09:00" />
     </LinearLayout>
 
@@ -142,10 +142,10 @@
         android:orientation="vertical"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
-        android:background="@drawable/received_message_background"
+        android:background="@drawable/receive_message_background"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/llReceived"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <ImageView
             android:id="@+id/ivReceived"
@@ -161,154 +161,181 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="4dp"
-            android:textColor="@android:color/white"
-            android:textSize="10sp"
+            android:textColor="@color/black"
+            android:textSize="12sp"
             tools:text="09:00" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
-
     <!--<?xml version="1.0" encoding="utf-8"?>-->
-<!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--    xmlns:tools="http://schemas.android.com/tools"-->
-<!--    android:id="@+id/clMessage"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="wrap_content">-->
+    <!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+    <!--    xmlns:tools="http://schemas.android.com/tools"-->
+    <!--    android:id="@+id/clMessage"-->
+    <!--    android:layout_width="match_parent"-->
+    <!--    android:layout_height="wrap_content">-->
+
+    <!--    &lt;!&ndash; WhatsApp-style Date Separator &ndash;&gt;-->
+    <!--    <LinearLayout-->
+    <!--        android:id="@+id/llDateSeparator"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginTop="8dp"-->
+    <!--        android:layout_marginBottom="8dp"-->
+    <!--        android:gravity="center"-->
+    <!--        android:orientation="horizontal"-->
+    <!--        android:visibility="gone"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent">-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/tvChatDate"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:paddingStart="12dp"-->
+    <!--            android:paddingEnd="12dp"-->
+    <!--            android:paddingTop="4dp"-->
+    <!--            android:paddingBottom="4dp"-->
+    <!--            android:text="Today"-->
+    <!--            android:textColor="@android:color/white"-->
+    <!--            android:textSize="12sp"-->
+    <!--            android:background="@drawable/date_background"-->
+    <!--            android:gravity="center"/>-->
+    <!--    </LinearLayout>-->
+
+    <!--    &lt;!&ndash; Sent Message &ndash;&gt;-->
+    <!--    <LinearLayout-->
+    <!--        android:id="@+id/llSent"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginTop="4dp"-->
+    <!--        android:layout_marginEnd="8dp"-->
+    <!--        android:orientation="horizontal"-->
+    <!--        android:visibility="gone"-->
+    <!--        android:background="@drawable/sent_message_background"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/llDateSeparator">-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/tvSentMessage"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:padding="12dp"-->
+    <!--            android:autoLink="all"-->
+    <!--            android:textColor="@android:color/white"-->
+    <!--            android:textColorLink="@color/linkColor"-->
+    <!--            tools:text="Hello Sir, How are you?" />-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/tvSentMessageTime"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="bottom"-->
+    <!--            android:layout_marginEnd="4dp"-->
+    <!--            android:textColor="@android:color/white"-->
+    <!--            android:textSize="10sp"-->
+    <!--            tools:text="09:00" />-->
+    <!--    </LinearLayout>-->
+
+    <!--    &lt;!&ndash; Sent Image &ndash;&gt;-->
+    <!--    <LinearLayout-->
+    <!--        android:id="@+id/llSentImage"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:orientation="vertical"-->
+    <!--        android:layout_marginEnd="8dp"-->
+    <!--        android:layout_marginTop="4dp"-->
+    <!--        android:background="@drawable/sent_message_background"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/llSent"-->
+    <!--        android:visibility="gone">-->
+
+    <!--        <ImageView-->
+    <!--            android:id="@+id/ivSent"-->
+    <!--            android:layout_width="250dp"-->
+    <!--            android:layout_height="250dp"-->
+    <!--            android:scaleType="centerCrop"-->
+    <!--            android:src="@drawable/ic_image"-->
+    <!--            android:background="@drawable/image_rounded_corners"/>-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/tvSentImageTime"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="bottom|end"-->
+    <!--            android:layout_marginEnd="4dp"-->
+    <!--            android:textColor="@android:color/white"-->
+    <!--            android:textSize="10sp"-->
+    <!--            tools:text="09:00" />-->
+    <!--    </LinearLayout>-->
+
+    <!--    &lt;!&ndash; Received Message &ndash;&gt;-->
+    <!--    <LinearLayout-->
+    <!--        android:id="@+id/llReceived"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginTop="4dp"-->
+    <!--        android:layout_marginStart="8dp"-->
+    <!--        android:orientation="horizontal"-->
+    <!--        android:visibility="gone"-->
+    <!--        android:background="@drawable/receive_message_background"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/llSentImage">-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/tvReceivedMessage"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:padding="12dp"-->
+    <!--            android:autoLink="all"-->
+    <!--            android:textColor="@android:color/white"-->
+    <!--            android:textColorLink="@color/linkColor"-->
+    <!--            tools:text="Hello Sir, How are you?" />-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/tvReceivedMessageTime"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="bottom"-->
+    <!--            android:layout_marginStart="4dp"-->
+    <!--            android:textSize="10sp"-->
+    <!--            tools:text="09:00" />-->
+    <!--    </LinearLayout>-->
+
+    <!--    &lt;!&ndash; Received Image &ndash;&gt;-->
+    <!--    <LinearLayout-->
+    <!--        android:id="@+id/llReceivedImage"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:orientation="vertical"-->
+    <!--        android:layout_marginStart="8dp"-->
+    <!--        android:layout_marginTop="4dp"-->
+    <!--        android:background="@drawable/received_message_background"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/llReceived"-->
+    <!--        android:visibility="gone">-->
+
+    <!--        <ImageView-->
+    <!--            android:id="@+id/ivReceived"-->
+    <!--            android:layout_width="250dp"-->
+    <!--            android:layout_height="250dp"-->
+    <!--            android:scaleType="centerCrop"-->
+    <!--            android:src="@drawable/ic_image"-->
+    <!--            android:background="@drawable/image_rounded_corners"/>-->
+
+    <!--        <TextView-->
+    <!--            android:id="@+id/tvReceivedImageTime"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:layout_gravity="bottom|end"-->
+    <!--            android:layout_marginEnd="4dp"-->
+    <!--            android:textColor="@android:color/white"-->
+    <!--            android:textSize="10sp"-->
+    <!--            tools:text="09:00" />-->
+    <!--    </LinearLayout>-->
+
+    <!--</androidx.constraintlayout.widget.ConstraintLayout>-->
 
 
-<!--    &lt;!&ndash; Sent Message &ndash;&gt;-->
-<!--    <LinearLayout-->
-<!--        android:id="@+id/llSent"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="4dp"-->
-<!--        android:layout_marginEnd="8dp"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:visibility="visible"-->
-<!--        android:background="@drawable/sent_message_background"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent">-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/tvSentMessage"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:padding="12dp"-->
-<!--            android:autoLink="all"-->
-<!--            android:textColor="@android:color/white"-->
-<!--            android:textColorLink="@color/linkColor"-->
-<!--            tools:text="Hello Sir, How are you?" />-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/tvSentMessageTime"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="bottom"-->
-<!--            android:layout_marginEnd="4dp"-->
-<!--            android:textColor="@android:color/white"-->
-<!--            android:textSize="12sp"-->
-<!--            tools:text="09:00" />-->
-<!--    </LinearLayout>-->
-
-<!--    &lt;!&ndash; Sent Image &ndash;&gt;-->
-<!--    <LinearLayout-->
-<!--        android:id="@+id/llSentImage"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="vertical"-->
-<!--        android:layout_marginEnd="8dp"-->
-<!--        android:layout_marginTop="4dp"-->
-<!--        android:background="@drawable/sent_message_background"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/llSent"-->
-<!--        android:visibility="visible">-->
-
-<!--        <ImageView-->
-<!--            android:id="@+id/ivSent"-->
-<!--            android:layout_width="250dp"-->
-<!--            android:layout_height="250dp"-->
-<!--            android:scaleType="centerCrop"-->
-<!--            android:src="@drawable/ic_image"-->
-<!--            android:background="@drawable/image_rounded_corners"/>-->
-
-
-<!--        <TextView-->
-<!--            android:id="@+id/tvSentImageTime"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="bottom|end"-->
-<!--            android:layout_marginEnd="4dp"-->
-<!--            android:textColor="@android:color/white"-->
-<!--            android:textSize="12sp"-->
-<!--            tools:text="09:00" />-->
-<!--    </LinearLayout>-->
-
-<!--    &lt;!&ndash; Received Message &ndash;&gt;-->
-<!--    <LinearLayout-->
-<!--        android:id="@+id/llReceived"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="4dp"-->
-<!--        android:layout_marginStart="8dp"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:visibility="visible"-->
-<!--        android:background="@drawable/receive_message_background"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/llSentImage">-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/tvReceivedMessage"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:padding="12dp"-->
-<!--            android:autoLink="all"-->
-<!--            android:textColor="@android:color/white"-->
-<!--            android:textColorLink="@color/linkColor"-->
-<!--            tools:text="Hello Sir, How are you?" />-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/tvReceivedMessageTime"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="bottom"-->
-<!--            android:layout_marginStart="4dp"-->
-<!--            android:textSize="12sp"-->
-<!--            tools:text="09:00" />-->
-<!--    </LinearLayout>-->
-
-<!--    &lt;!&ndash; Received Image &ndash;&gt;-->
-<!--    <LinearLayout-->
-<!--        android:id="@+id/llReceivedImage"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="vertical"-->
-<!--        android:layout_marginStart="8dp"-->
-<!--        android:layout_marginTop="4dp"-->
-<!--        android:background="@drawable/received_message_background"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/llReceived"-->
-<!--        android:visibility="visible">-->
-
-<!--        <ImageView-->
-<!--            android:id="@+id/ivReceived"-->
-<!--            android:layout_width="250dp"-->
-<!--            android:layout_height="250dp"-->
-<!--            android:scaleType="centerCrop"-->
-<!--            android:src="@drawable/ic_image"-->
-<!--            android:background="@drawable/image_rounded_corners"/>-->
-
-
-<!--        <TextView-->
-<!--            android:id="@+id/tvReceivedImageTime"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="bottom|end"-->
-<!--            android:layout_marginEnd="4dp"-->
-<!--            android:textColor="@android:color/white"-->
-<!--            android:textSize="12sp"-->
-<!--            tools:text="09:00" />-->
-<!--    </LinearLayout>-->
-
-<!--</androidx.constraintlayout.widget.ConstraintLayout>-->
