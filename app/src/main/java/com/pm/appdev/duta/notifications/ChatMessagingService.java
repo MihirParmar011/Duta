@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,93 +28,120 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 public class ChatMessagingService extends FirebaseMessagingService {
+    private static final String TAG = "ChatMessagingService";
 
     @Override
-    public void onNewToken(String s) {
-        super.onNewToken(s); // // sending token to server here
-
-        Util.updateDeviceToken(this, s);
-
+    public void onNewToken(@NonNull String token) {
+        super.onNewToken(token);
+        Log.d(TAG, "Refreshed token: " + token);
+        Util.updateDeviceToken(this, token);
     }
 
-    @SuppressLint("SuspiciousIndentation")
     @Override
-    public void onMessageReceived(RemoteMessage remoteMessage) {
+    public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
+        Log.d(TAG, "Message received: " + remoteMessage.getData());
 
+        // Extract data from message
         String title = remoteMessage.getData().get(Constants.NOTIFICATION_TITLE);
         String message = remoteMessage.getData().get(Constants.NOTIFICATION_MESSAGE);
 
+        // Validate notification data
+        if (title == null || message == null) {
+            Log.e(TAG, "Notification data is null. Title: " + title + ", Message: " + message);
+            return;
+        }
+
+        // Create intent for notification click
         Intent intentChat = new Intent(this, LoginActivity.class);
-        PendingIntent pendingIntent  = PendingIntent.getActivity(this, 0, intentChat, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+        intentChat.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intentChat,
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
 
-        final NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-        final NotificationCompat.Builder notificationBuilder;
+        // Create notification builder
+        NotificationCompat.Builder notificationBuilder = createNotificationBuilder();
+        notificationBuilder.setSmallIcon(R.drawable.ic_chat)
+                .setColor(getResources().getColor(R.color.colorPrimary))
+                .setContentTitle(title)
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri)
+                .setContentIntent(pendingIntent);
 
-        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.O)
-        {
-            NotificationChannel channel = new NotificationChannel(Constants.CHANNEL_ID,
-                    Constants.CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+        try {
+            if (message.startsWith("https://firebasestorage.")) {
+                handleImageNotification(notificationManager, notificationBuilder, message);
+            } else {
+                notificationBuilder.setContentText(message);
+                notificationManager.notify(getNotificationId(), notificationBuilder.build());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to show notification", e);
+            // Fallback to simple text notification if image loading fails
+            notificationBuilder.setContentText("New message received");
+            notificationManager.notify(getNotificationId(), notificationBuilder.build());
+        }
+    }
 
+    private NotificationCompat.Builder createNotificationBuilder() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    Constants.CHANNEL_ID,
+                    Constants.CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH
+            );
             channel.setDescription(Constants.CHANNEL_DESC);
-            notificationManager.createNotificationChannel(channel);
-            notificationBuilder = new NotificationCompat.Builder(this, Constants.CHANNEL_ID);
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.createNotificationChannel(channel);
+            return new NotificationCompat.Builder(this, Constants.CHANNEL_ID);
+        } else {
+            return new NotificationCompat.Builder(this);
         }
-        else
-        notificationBuilder = new NotificationCompat.Builder(this);
+    }
 
-            notificationBuilder.setSmallIcon(R.drawable.ic_chat);
-        notificationBuilder.setColor(getResources().getColor(R.color.colorPrimary));
-        notificationBuilder.setContentTitle(title);
-        notificationBuilder.setAutoCancel(true);
-        notificationBuilder.setSound(defaultSoundUri);
-        notificationBuilder.setContentIntent(pendingIntent);
+    @SuppressLint("SuspiciousIndentation")
+    private void handleImageNotification(NotificationManager notificationManager,
+                                         NotificationCompat.Builder notificationBuilder,
+                                         String imageUrl) {
+        try {
+            final NotificationCompat.BigPictureStyle bigPictureStyle = new NotificationCompat.BigPictureStyle();
+            bigPictureStyle.setSummaryText("New image received");
 
-        if(message.startsWith("https://firebasestorage."))
-        {
-            try{
-             final NotificationCompat.BigPictureStyle bigPictureStyle = new NotificationCompat.BigPictureStyle();
+            Glide.with(this)
+                    .asBitmap()
+                    .load(imageUrl)
+                    .into(new CustomTarget<Bitmap>(200, 100) {
+                        @Override
+                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                            bigPictureStyle.bigPicture(resource);
+                            notificationBuilder.setStyle(bigPictureStyle);
+                            notificationManager.notify(getNotificationId(), notificationBuilder.build());
+                        }
 
-                Glide.with(this)
-                        .asBitmap()
-                        .load(message)
-                        .into(new CustomTarget<Bitmap>(200, 100) {
-                            @Override
-                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                bigPictureStyle.bigPicture(resource);
-                                notificationBuilder.setStyle(bigPictureStyle);
-                                notificationManager.notify(999, notificationBuilder.build());
-                            }
+                        @Override
+                        public void onLoadCleared(@Nullable Drawable placeholder) {
+                            // Fallback if image loading is cleared
+                            notificationBuilder.setContentText("New image received");
+                            notificationManager.notify(getNotificationId(), notificationBuilder.build());
+                        }
 
-                            @Override
-                            public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                            }
-                        });
-
-
-            }
-            catch (Exception ex)
-            {
-                notificationBuilder.setContentText("New File Received");
-            }
+                        @Override
+                        public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                            super.onLoadFailed(errorDrawable);
+                            notificationBuilder.setContentText("New image received");
+                            notificationManager.notify(getNotificationId(), notificationBuilder.build());
+                        }
+                    });
+        } catch (Exception ex) {
+            Log.e(TAG, "Image notification error", ex);
+            notificationBuilder.setContentText("New image received");
+            notificationManager.notify(getNotificationId(), notificationBuilder.build());
         }
-        else {
-            notificationBuilder.setContentText(message);
-            notificationManager.notify(999, notificationBuilder.build());
-        }
+    }
 
-
-
+    private int getNotificationId() {
+        return (int) System.currentTimeMillis();
     }
 }
-
-
-
-
-
-
-

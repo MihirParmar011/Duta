@@ -15,6 +15,8 @@ import android.os.Message;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Toast;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,8 +49,16 @@ public class LoginActivity extends AppCompatActivity {
 
         etEmailOrUserId = findViewById(R.id.etEmailOrUserId);
         etPassword = findViewById(R.id.etPassword);
-
         progressBar = findViewById(R.id.progressBar);
+
+        // Apply window insets to avoid overlap with status and navigation bars
+        View rootView = findViewById(android.R.id.content);
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            int statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            int navigationBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+            v.setPadding(0, statusBarHeight, 0, navigationBarHeight);
+            return insets;
+        });
     }
 
     @Override
@@ -83,12 +93,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void btnLoginClick(View v) {
-        emailOrUserId = etEmailOrUserId.getText().toString().trim();
-        password = etPassword.getText().toString().trim();
+        emailOrUserId = Objects.requireNonNull(etEmailOrUserId.getText()).toString().trim();
+        password = Objects.requireNonNull(etPassword.getText()).toString().trim();
 
-        if (emailOrUserId.equals("")) {
+        if (emailOrUserId.isEmpty()) {
             etEmailOrUserId.setError(getString(R.string.enter_email_or_user_id));
-        } else if (password.equals("")) {
+        } else if (password.isEmpty()) {
             etPassword.setError(getString(R.string.enter_password));
         } else {
             if (Util.connectionAvailable(this)) {
@@ -108,15 +118,12 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loginWithEmail(String email, String password) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                progressBar.setVisibility(View.GONE);
-                if (task.isSuccessful()) {
-                    onStart();
-                } else {
-                    Toast.makeText(LoginActivity.this, "Login Failed: " + task.getException(), Toast.LENGTH_SHORT).show();
-                }
+        firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+            progressBar.setVisibility(View.GONE);
+            if (task.isSuccessful()) {
+                onStart();
+            } else {
+                Toast.makeText(LoginActivity.this, "Login Failed: " + task.getException(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -158,6 +165,7 @@ public class LoginActivity extends AppCompatActivity {
     // Double back pressed in this LoginActivity will close the application
     private boolean isBackPressedOnce = false;
 
+    @SuppressWarnings(value = "deprecation")
     @Override
     public void onBackPressed() {
         if (isBackPressedOnce) {

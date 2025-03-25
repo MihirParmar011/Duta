@@ -69,9 +69,15 @@ import com.google.mlkit.nl.smartreply.TextMessage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static android.provider.MediaStore.ACTION_IMAGE_CAPTURE;
@@ -137,13 +143,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         fetchUserDetails(chatUserId);
 
 
-        // Initialize ActivityResultLaunchers
         pickImageLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri uri = result.getData().getData();
-                        uploadFile(uri, Constants.MESSAGE_TYPE_IMAGE);
+                        try {
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            encodeAndSendImage(bitmap, Constants.MESSAGE_TYPE_IMAGE);
+                        } catch (IOException e) {
+                            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
 
@@ -152,7 +162,18 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri uri = result.getData().getData();
-                        uploadFile(uri, Constants.MESSAGE_TYPE_VIDEO);
+                        try {
+                            byte[] videoBytes = readBytesFromUri(uri);
+                            if (videoBytes != null) {
+                                String videoBase64 = Base64.encodeToString(videoBytes, Base64.DEFAULT);
+                                DatabaseReference messageRef = mRootRef.child(NodeNames.MESSAGES)
+                                        .child(currentUserId).child(chatUserId).push();
+                                String pushId = messageRef.getKey();
+                                sendMessage(videoBase64, Constants.MESSAGE_TYPE_VIDEO, pushId);
+                            }
+                        } catch (IOException e) {
+                            Toast.makeText(this, "Failed to load video", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
 
@@ -161,9 +182,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Bitmap bitmap = (Bitmap) Objects.requireNonNull(result.getData().getExtras()).get("data");
-                        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                        Objects.requireNonNull(bitmap).compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-                        uploadBytes(bytes);
+                        encodeAndSendImage(bitmap, Constants.MESSAGE_TYPE_IMAGE);
                     }
                 });
 
@@ -186,138 +205,68 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void fetchUserDetails(String userId) {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
-                .child("Users").child(userId); // Ensure this matches your database structure
+    private void fetchUserDetails(String targetUid) {
+        if (targetUid == null) {
+            Log.e("ChatActivity", "UID is null");
+            return;
+        }
 
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+
+        // Query: Find the user where "uid" field matches targetUid
+        Query query = usersRef.orderByChild("uid").equalTo(targetUid);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    // Fetch user details
-                    userName = dataSnapshot.child("name").getValue(String.class);
-                    photoName = dataSnapshot.child("photo").getValue(String.class);
+                    // Loop through results (should be 1 match)
+                    for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                        String userName = userSnapshot.child("name").getValue(String.class);
+                        String photoName = userSnapshot.child("photo").getValue(String.class);
 
-                    // Log fetched data for debugging
-                    Log.d("ChatActivity", "Fetched User Name: " + userName);
-                    Log.d("ChatActivity", "Fetched Photo: " + (photoName != null ? "Photo exists" : "Photo is null"));
-
-                    // Update UI on the main thread
-                    runOnUiThread(() -> {
-                        if (tvUserName != null && userName != null) {
-                            tvUserName.setText(userName); // Set the user's name
-                        } else {
-                            Log.e("ChatActivity", "tvUser Name is null or userName is null");
-                        }
-
-                        // Decode and set the profile photo
-                        if (!TextUtils.isEmpty(photoName)) {
-                            try {
-                                // Decode Base64 string into a Bitmap
-                                byte[] decodedString = Base64.decode(photoName, Base64.DEFAULT);
-                                Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-
-                                // Set the decoded Bitmap to the ImageView
-                                if (ivProfile != null) {
-                                    ivProfile.setImageBitmap(decodedBitmap);
+                        runOnUiThread(() -> {
+                            // Update UI (same as your original code)
+                            if (tvUserName != null) {
+                                tvUserName.setText(userName != null ? userName : "Unknown User");
+                            }
+                            if (ivProfile != null) {
+                                if (!TextUtils.isEmpty(photoName)) {
+                                    try {
+                                        byte[] decodedString = Base64.decode(photoName, Base64.DEFAULT);
+                                        Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                        ivProfile.setImageBitmap(decodedBitmap);
+                                    } catch (Exception e) {
+                                        ivProfile.setImageResource(R.drawable.default_profile);
+                                    }
                                 } else {
-                                    Log.e("ChatActivity", "ivProfile is null");
-                                }
-                            } catch (IllegalArgumentException e) {
-                                Log.e("ChatActivity", "Failed to decode Base64 photo: " + e.getMessage());
-                                // Set a default profile photo if decoding fails
-                                if (ivProfile != null) {
                                     ivProfile.setImageResource(R.drawable.default_profile);
                                 }
                             }
-                        } else {
-                            // Set a default profile photo if no photo is available
-                            if (ivProfile != null) {
-                                ivProfile.setImageResource(R.drawable.default_profile);
-                            } else {
-                                Log.e("ChatActivity", "ivProfile is null");
-                            }
-                        }
-                    });
+                        });
+                        break; // Exit after first match (UIDs should be unique)
+                    }
                 } else {
-                    Log.e("ChatActivity", "User  data not found in Firebase for userId: " + userId);
-                    runOnUiThread(() -> Toast.makeText(ChatActivity.this, "User  data not found.", Toast.LENGTH_SHORT).show());
+                    Log.e("ChatActivity", "User with UID not found: " + targetUid);
+                    runOnUiThread(() -> {
+                        if (tvUserName != null) tvUserName.setText("Unknown User");
+                        if (ivProfile != null) ivProfile.setImageResource(R.drawable.default_profile);
+                    });
                 }
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e("ChatActivity", "Failed to fetch user data: " + databaseError.getMessage());
-                runOnUiThread(() -> Toast.makeText(ChatActivity.this, "Failed to fetch user data.", Toast.LENGTH_SHORT).show());
+                Log.e("ChatActivity", "Query failed: " + databaseError.getMessage());
+                runOnUiThread(() -> {
+                    if (tvUserName != null) tvUserName.setText("Unknown User");
+                    if (ivProfile != null) ivProfile.setImageResource(R.drawable.default_profile);
+                });
             }
         });
     }
-//    private void fetchUserDetails(String userId) {
-//        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
-//                .child("Users").child(userId); // Correct path to fetch user details
-//
-//        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                if (dataSnapshot.exists()) {
-//                    // Fetch user details
-//                    String userName = dataSnapshot.child("name").getValue(String.class);
-//                    String photoName = dataSnapshot.child("photo").getValue(String.class);
-//
-//                    // Log fetched data for debugging
-//                    Log.d("ChatActivity", "Fetched User Name: " + userName);
-//                    Log.d("ChatActivity", "Fetched Photo: " + (photoName != null ? "Photo exists" : "Photo is null"));
-//
-//                    // Update UI on the main thread
-//                    runOnUiThread(() -> {
-//                        if (tvUserName != null && userName != null) {
-//                            tvUserName.setText(userName); // Set the user's name
-//                        } else {
-//                            Log.e("ChatActivity", "tvUserName is null or userName is null");
-//                        }
-//
-//                        // Decode and set the profile photo
-//                        if (!TextUtils.isEmpty(photoName)) {
-//                            try {
-//                                // Decode Base64 string into a Bitmap
-//                                byte[] decodedString = Base64.decode(photoName, Base64.DEFAULT);
-//                                Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-//
-//                                // Set the decoded Bitmap to the ImageView
-//                                if (ivProfile != null) {
-//                                    ivProfile.setImageBitmap(decodedBitmap);
-//                                } else {
-//                                    Log.e("ChatActivity", "ivProfile is null");
-//                                }
-//                            } catch (IllegalArgumentException e) {
-//                                Log.e("ChatActivity", "Failed to decode Base64 photo: " + e.getMessage());
-//                                // Set a default profile photo if decoding fails
-//                                if (ivProfile != null) {
-//                                    ivProfile.setImageResource(R.drawable.default_profile);
-//                                }
-//                            }
-//                        } else {
-//                            // Set a default profile photo if no photo is available
-//                            if (ivProfile != null) {
-//                                ivProfile.setImageResource(R.drawable.default_profile);
-//                            } else {
-//                                Log.e("ChatActivity", "ivProfile is null");
-//                            }
-//                        }
-//                    });
-//                } else {
-//                    Log.e("ChatActivity", "User data not found in Firebase.");
-//                    runOnUiThread(() -> Toast.makeText(ChatActivity.this, "User data not found.", Toast.LENGTH_SHORT).show());
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//                Log.e("ChatActivity", "Failed to fetch user data: " + databaseError.getMessage());
-//                runOnUiThread(() -> Toast.makeText(ChatActivity.this, "Failed to fetch user data.", Toast.LENGTH_SHORT).show());
-//            }
-//        });
-//    }
 
     private void initializeUI() {
         // Initialize Toolbar and Action Bar
@@ -423,6 +372,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         view.findViewById(R.id.ivClose).setOnClickListener(this);
         bottomSheetDialog.setContentView(view);
 
+        // Replace the file forwarding section with Base64 approach
         if (getIntent().hasExtra(Extras.MESSAGE) && getIntent().hasExtra(Extras.MESSAGE_ID) && getIntent().hasExtra(Extras.MESSAGE_TYPE)) {
             String message = getIntent().getStringExtra(Extras.MESSAGE);
             String messageId = getIntent().getStringExtra(Extras.MESSAGE_ID);
@@ -431,24 +381,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             DatabaseReference messageRef = mRootRef.child("Messages").child(currentUserId).child(chatUserId).push();
             final String newMessageId = messageRef.getKey();
 
-            if (Objects.equals(messageType, Constants.MESSAGE_TYPE_TEXT)) {
-                sendMessage(message, messageType, newMessageId);
-            } else {
-                StorageReference rootRef = FirebaseStorage.getInstance().getReference();
-                String folder = Objects.equals(messageType, Constants.MESSAGE_TYPE_VIDEO) ? Constants.MESSAGE_VIDEOS : Constants.MESSAGE_IMAGES;
-                String oldFileName = Objects.equals(messageType, Constants.MESSAGE_TYPE_VIDEO) ? messageId + ".mp4" : messageId + ".jpg";
-                String newFileName = Objects.equals(messageType, Constants.MESSAGE_TYPE_VIDEO) ? newMessageId + ".mp4" : newMessageId + ".jpg";
-
-                final String localFilePath = Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + "/" + oldFileName;
-                final File localFile = new File(localFilePath);
-
-                final StorageReference newFileRef = rootRef.child(folder).child(newFileName);
-                rootRef.child(folder).child(oldFileName).getFile(localFile)
-                        .addOnSuccessListener(taskSnapshot -> {
-                            UploadTask uploadTask = newFileRef.putFile(Uri.fromFile(localFile));
-                            uploadProgress(uploadTask, newFileRef, newMessageId, messageType);
-                        });
-            }
+            // For forwarded messages, just send them directly (they should already be in Base64 format)
+            sendMessage(message, messageType, newMessageId);
         }
 
         // Set up user status listener with null checks
@@ -523,10 +457,79 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    private void encodeAndSendImage(Bitmap bitmap, String messageType) {
+        // Show progress
+        llProgress.setVisibility(View.VISIBLE);
+
+        new Thread(() -> {
+            try {
+                // Compress and encode image in background thread
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+                byte[] imageBytes = baos.toByteArray();
+                String imageBase64 = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+                // Create message reference
+                DatabaseReference messageRef = mRootRef.child(NodeNames.MESSAGES)
+                        .child(currentUserId).child(chatUserId).push();
+                String pushId = messageRef.getKey();
+
+                // Send message on UI thread
+                runOnUiThread(() -> {
+                    sendMessage(imageBase64, messageType, pushId);
+                    llProgress.setVisibility(View.GONE);
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Failed to send image", Toast.LENGTH_SHORT).show();
+                    llProgress.setVisibility(View.GONE);
+                });
+            }
+        }).start();
+    }
+
+    private byte[] readBytesFromUri(Uri uri) throws IOException {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+
+        if (inputStream != null) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+            inputStream.close();
+            return byteBuffer.toByteArray();
+        }
+        return null;
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     private void sendMessage(final String msg, final String msgType, String pushId) {
         try {
             if (!TextUtils.isEmpty(msg)) {
-                // Use HashMap with proper generic types
+                // Clear input immediately
+                etMessage.setText("");
+
+                // Create temporary message for local display
+                MessageModel tempMessage = new MessageModel();
+                tempMessage.setMessageId(pushId);
+                tempMessage.setMessage(msg);
+                tempMessage.setMessageType(msgType);
+                tempMessage.setMessageFrom(currentUserId);
+                tempMessage.setMessageTime(System.currentTimeMillis());
+
+                // Add to pending messages map
+                if (childEventListener instanceof ChildEventListenerWithPending) {
+                    ((ChildEventListenerWithPending) childEventListener).addPendingMessage(pushId, tempMessage);
+                }
+
+                // Add to UI immediately (will be replaced when Firebase confirms)
+                messagesList.add(tempMessage);
+                messagesAdapter.notifyItemInserted(messagesList.size() - 1);
+                rvMessages.scrollToPosition(messagesList.size() - 1);
+
+                // Create message data for Firebase
                 HashMap<String, Object> messageMap = new HashMap<>();
                 messageMap.put(NodeNames.MESSAGE_ID, pushId);
                 messageMap.put(NodeNames.MESSAGE, msg);
@@ -537,98 +540,306 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 String currentUserRef = NodeNames.MESSAGES + "/" + currentUserId + "/" + chatUserId;
                 String chatUserRef = NodeNames.MESSAGES + "/" + chatUserId + "/" + currentUserId;
 
-                // Use HashMap with proper generic types
                 HashMap<String, Object> messageUserMap = new HashMap<>();
                 messageUserMap.put(currentUserRef + "/" + pushId, messageMap);
                 messageUserMap.put(chatUserRef + "/" + pushId, messageMap);
 
-                etMessage.setText("");
-                if (msgType.equals(Constants.MESSAGE_TYPE_TEXT)) {
-                    conversation.add(TextMessage.createForLocalUser(msg, System.currentTimeMillis()));
-                }
-
+                // Update Firebase
                 mRootRef.updateChildren(messageUserMap, (databaseError, databaseReference) -> {
                     if (databaseError != null) {
-                        Toast.makeText(ChatActivity.this, getString(R.string.failed_to_send_message, databaseError.getMessage()),
+                        // Remove failed message from UI
+                        messagesList.removeIf(m -> m.getMessageId().equals(pushId));
+                        messagesAdapter.notifyDataSetChanged();
+
+                        Toast.makeText(ChatActivity.this,
+                                getString(R.string.failed_to_send_message, databaseError.getMessage()),
                                 Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(ChatActivity.this, R.string.message_sent_successfully, Toast.LENGTH_SHORT).show();
-                        String title = "";
-
-                        switch (msgType) {
-                            case Constants.MESSAGE_TYPE_TEXT:
-                                title = "New Message";
-                                break;
-                            case Constants.MESSAGE_TYPE_IMAGE:
-                                title = "New Image";
-                                break;
-                            case Constants.MESSAGE_TYPE_VIDEO:
-                                title = "New Video";
-                                break;
+                        // Success - the real message will appear via onChildAdded
+                        // Send notification
+                        String notificationTitle = "New Message";
+                        if (msgType.equals(Constants.MESSAGE_TYPE_IMAGE)) {
+                            notificationTitle = "New Image";
+                        } else if (msgType.equals(Constants.MESSAGE_TYPE_VIDEO)) {
+                            notificationTitle = "New Video";
                         }
 
-                        Util.sendNotification(ChatActivity.this, title, msg, chatUserId);
+                        Util.sendNotification(ChatActivity.this, notificationTitle,
+                                msgType.equals(Constants.MESSAGE_TYPE_TEXT) ? msg : notificationTitle,
+                                chatUserId);
 
-                        String lastMessage = !title.equals("New Message") ? title : msg;
+                        // Update last message in chat list
+                        String lastMessage = msgType.equals(Constants.MESSAGE_TYPE_TEXT) ? msg : notificationTitle;
                         Util.updateChatDetails(ChatActivity.this, currentUserId, chatUserId, lastMessage);
                     }
                 });
             }
         } catch (Exception ex) {
-            Toast.makeText(ChatActivity.this, getString(R.string.failed_to_send_message, ex.getMessage()),
+            Toast.makeText(ChatActivity.this,
+                    getString(R.string.failed_to_send_message, ex.getMessage()),
                     Toast.LENGTH_SHORT).show();
         }
     }
 
+    // Helper interface for pending messages
+    private interface ChildEventListenerWithPending extends ChildEventListener {
+        void addPendingMessage(String messageId, MessageModel message);
+    }
+
     private void loadMessages() {
         messagesList.clear();
-
         conversation.clear();
         cgSmartReplies.removeAllViews();
-        DatabaseReference databaseReferenceMessages = mRootRef.child(NodeNames.MESSAGES).child(currentUserId).child(chatUserId);
 
-        Query messageQuery = databaseReferenceMessages.limitToLast(currentPage * RECORD_PER_PAGE);
+        DatabaseReference databaseReferenceMessages = mRootRef.child(NodeNames.MESSAGES)
+                .child(currentUserId)
+                .child(chatUserId);
 
-        if (childEventListener != null)
+        // Order by timestamp to ensure correct ordering
+        Query messageQuery = databaseReferenceMessages.orderByChild(NodeNames.MESSAGE_TIME)
+                .limitToLast(currentPage * RECORD_PER_PAGE);
+
+        if (childEventListener != null) {
             messageQuery.removeEventListener(childEventListener);
+        }
 
         childEventListener = new ChildEventListener() {
+            private final Map<String, MessageModel> pendingMessages = new HashMap<>();
+
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 MessageModel message = dataSnapshot.getValue(MessageModel.class);
+                if (message != null) {
+                    // Check if this is a pending message we sent
+                    pendingMessages.remove(message.getMessageId());
 
-                messagesList.add(message);
-                messagesAdapter.notifyDataSetChanged();
-                rvMessages.scrollToPosition(messagesList.size() - 1);
-                srlMessages.setRefreshing(false);
+                    // Add to UI only if not already present
+                    if (!containsMessage(messagesList, message.getMessageId())) {
+                        messagesList.add(message);
+                        // Sort by timestamp (just in case)
+                        messagesList.sort(Comparator.comparingLong(MessageModel::getMessageTime));
 
-                showSmartReplies(message);
+                        messagesAdapter.notifyDataSetChanged();
+                        rvMessages.scrollToPosition(messagesList.size() - 1);
+                        srlMessages.setRefreshing(false);
+
+                        // Show smart replies only for received text messages
+                        if (message.getMessageFrom().equals(chatUserId) &&
+                                message.getMessageType().equals(Constants.MESSAGE_TYPE_TEXT)) {
+                            showSmartReplies(message);
+                        }
+                    }
+                }
             }
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+                // Handle message updates if needed
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                loadMessages();
+                // Handle message deletion
+                MessageModel message = dataSnapshot.getValue(MessageModel.class);
+                if (message != null) {
+                    messagesList.removeIf(m -> m.getMessageId().equals(message.getMessageId()));
+                    messagesAdapter.notifyDataSetChanged();
+                }
             }
 
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+                // Not needed for basic chat
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 srlMessages.setRefreshing(false);
+                Toast.makeText(ChatActivity.this,
+                        "Failed to load messages: " + databaseError.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            // Helper to track pending messages
+            public void addPendingMessage(String messageId, MessageModel message) {
+                pendingMessages.put(messageId, message);
             }
         };
 
         messageQuery.addChildEventListener(childEventListener);
     }
+
+    private boolean containsMessage(List<MessageModel> messages, String messageId) {
+        for (MessageModel message : messages) {
+            if (message.getMessageId().equals(messageId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isMessageExists(String messageId) {
+        for (MessageModel m : messagesList) {
+            if (m.getMessageId().equals(messageId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeMessageFromList(String messageId) {
+        for (int i = 0; i < messagesList.size(); i++) {
+            if (messagesList.get(i).getMessageId().equals(messageId)) {
+                messagesList.remove(i);
+                messagesAdapter.notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+//    private void sendMessage(final String msg, final String msgType, String pushId) {
+//        try {
+//            if (TextUtils.isEmpty(msg)){
+//                Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
+//                return;
+//            }
+//
+//            HashMap<String, Object> messageMap = new HashMap<>();
+//            messageMap.put(NodeNames.MESSAGE_ID, pushId);
+//            messageMap.put(NodeNames.MESSAGE, msg);
+//            messageMap.put(NodeNames.MESSAGE_TYPE, msgType);
+//            messageMap.put(NodeNames.MESSAGE_FROM, currentUserId);
+//            messageMap.put(NodeNames.MESSAGE_TIME, ServerValue.TIMESTAMP);  // Server will set the time
+//
+//            String currentUserRef = NodeNames.MESSAGES + "/" + currentUserId + "/" + chatUserId;
+//            String chatUserRef = NodeNames.MESSAGES + "/" + chatUserId + "/" + currentUserId;
+//
+//            HashMap<String, Object> messageUserMap = new HashMap<>();
+//            messageUserMap.put(currentUserRef + "/" + pushId, messageMap);
+//            messageUserMap.put(chatUserRef + "/" + pushId, messageMap);
+//
+//            mRootRef.updateChildren(messageUserMap).addOnCompleteListener(task -> {
+//                if (task.isSuccessful()) {
+//                    etMessage.setText("");
+//                    if (msgType.equals(Constants.MESSAGE_TYPE_TEXT)) {
+//                        conversation.add(TextMessage.createForLocalUser(msg, System.currentTimeMillis()));
+//                    }
+//                } else {
+//                    Toast.makeText(ChatActivity.this,
+//                            "Failed to send message: " + task.getException(),
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        } catch (Exception e) {
+//            Toast.makeText(this, "Error sending message: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//        }
+//    }
+//    private void sendMessage(final String msg, final String msgType, String pushId) {
+//        try {
+//            if (TextUtils.isEmpty(msg)){
+//                Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
+//                return;
+//            }
+//
+//            HashMap<String, Object> messageMap = new HashMap<>();
+//            messageMap.put(NodeNames.MESSAGE_ID, pushId);
+//            messageMap.put(NodeNames.MESSAGE, msg);
+//            messageMap.put(NodeNames.MESSAGE_TYPE, msgType);
+//            messageMap.put(NodeNames.MESSAGE_FROM, currentUserId);
+//            messageMap.put(NodeNames.MESSAGE_TIME, ServerValue.TIMESTAMP);
+//
+//            String currentUserRef = NodeNames.MESSAGES + "/" + currentUserId + "/" + chatUserId;
+//            String chatUserRef = NodeNames.MESSAGES + "/" + chatUserId + "/" + currentUserId;
+//
+//            HashMap<String, Object> messageUserMap = new HashMap<>();
+//            messageUserMap.put(currentUserRef + "/" + pushId, messageMap);
+//            messageUserMap.put(chatUserRef + "/" + pushId, messageMap);
+//
+//            mRootRef.updateChildren(messageUserMap).addOnCompleteListener(task -> {
+//                if (task.isSuccessful()) {
+//                    etMessage.setText("");
+//                    if (msgType.equals(Constants.MESSAGE_TYPE_TEXT)) {
+//                        conversation.add(TextMessage.createForLocalUser(msg, System.currentTimeMillis()));
+//                    }
+//                } else {
+//                    Toast.makeText(ChatActivity.this,
+//                            "Failed to send message: " + task.getException(),
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        } catch (Exception e) {
+//            Toast.makeText(this, "Error sending message: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//        }
+//    }
+
+//    private void loadMessages() {
+//        messagesList.clear();
+//        conversation.clear();
+//        cgSmartReplies.removeAllViews();
+//
+//        DatabaseReference databaseReferenceMessages = mRootRef.child(NodeNames.MESSAGES)
+//                .child(currentUserId)
+//                .child(chatUserId);
+//
+//        Query messageQuery = databaseReferenceMessages.limitToLast(currentPage * RECORD_PER_PAGE);
+//
+//        if (childEventListener != null) {
+//            messageQuery.removeEventListener(childEventListener);
+//        }
+//
+//        childEventListener = new ChildEventListener() {
+//            @Override
+//            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//                try {
+//                    MessageModel message = dataSnapshot.getValue(MessageModel.class);
+//                    if (message != null) {
+//                        // Check if this message already exists to prevent duplicates
+//                        boolean exists = false;
+//                        for (MessageModel m : messagesList) {
+//                            if (m.getMessageId().equals(message.getMessageId())) {
+//                                exists = true;
+//                                break;
+//                            }
+//                        }
+//
+//                        if (!exists) {
+//                            messagesList.add(message);
+//                            messagesAdapter.notifyItemInserted(messagesList.size() - 1);
+//                            rvMessages.scrollToPosition(messagesList.size() - 1);
+//
+//                            // Only show smart replies for text messages
+//                            if (message.getMessageType().equals(Constants.MESSAGE_TYPE_TEXT)) {
+//                                showSmartReplies(message);
+//                            }
+//                        }
+//                    }
+//                } catch (Exception e) {
+//                    Log.e("ChatActivity", "Error parsing message: " + e.getMessage());
+//                }
+//                srlMessages.setRefreshing(false);
+//            }
+//
+//            @Override
+//            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
+//
+//            @Override
+//            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+//                loadMessages(); // Refresh the list if a message is removed
+//            }
+//
+//            @Override
+//            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//                Log.e("ChatActivity", "Messages loading cancelled: " + databaseError.getMessage());
+//                srlMessages.setRefreshing(false);
+//            }
+//        };
+//
+//        messageQuery.addChildEventListener(childEventListener);
+//    }
 
     @Override
     public void onClick(View view) {
@@ -746,122 +957,47 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_CODE_CAPTURE_IMAGE)//Camera
-            {
+            if (requestCode == REQUEST_CODE_CAPTURE_IMAGE) { // Camera
                 Bitmap bitmap = (Bitmap) Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(data).getExtras())).get("data");
-
-                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                Objects.requireNonNull(bitmap).compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-
-                uploadBytes(bytes);
-
-            } else if (requestCode == REQUEST_CODE_PICK_IMAGE) { //Gallery
-                Uri uri = Objects.requireNonNull(data).getData();
-                uploadFile(uri, Constants.MESSAGE_TYPE_IMAGE);
-            } else if (requestCode == REQUEST_CODE_PICK_VIDEO)//Video
-            {
-                Uri uri = Objects.requireNonNull(data).getData();
-                uploadFile(uri, Constants.MESSAGE_TYPE_VIDEO);
+                encodeAndSendImage(bitmap, Constants.MESSAGE_TYPE_IMAGE);
             }
-            else  if(requestCode==REQUEST_CODE_FORWARD_MESSAGE){
-
-                Intent intent = new Intent( this, ChatActivity.class);
+            else if (requestCode == REQUEST_CODE_PICK_IMAGE) { // Gallery
+                Uri uri = Objects.requireNonNull(data).getData();
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                    encodeAndSendImage(bitmap, Constants.MESSAGE_TYPE_IMAGE);
+                } catch (IOException e) {
+                    Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else if (requestCode == REQUEST_CODE_PICK_VIDEO) { // Video
+                Uri uri = Objects.requireNonNull(data).getData();
+                try {
+                    byte[] videoBytes = readBytesFromUri(uri);
+                    if (videoBytes != null) {
+                        String videoBase64 = Base64.encodeToString(videoBytes, Base64.DEFAULT);
+                        DatabaseReference messageRef = mRootRef.child(NodeNames.MESSAGES)
+                                .child(currentUserId).child(chatUserId).push();
+                        String pushId = messageRef.getKey();
+                        sendMessage(videoBase64, Constants.MESSAGE_TYPE_VIDEO, pushId);
+                    }
+                } catch (IOException e) {
+                    Toast.makeText(this, "Failed to load video", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else if (requestCode == REQUEST_CODE_FORWARD_MESSAGE) {
+                Intent intent = new Intent(this, ChatActivity.class);
                 intent.putExtra(Extras.USER_KEY, Objects.requireNonNull(data).getStringExtra(Extras.USER_KEY));
                 intent.putExtra(Extras.USER_NAME, data.getStringExtra(Extras.USER_NAME));
                 intent.putExtra(Extras.PHOTO_NAME, data.getStringExtra(Extras.PHOTO_NAME));
-
                 intent.putExtra(Extras.MESSAGE, data.getStringExtra(Extras.MESSAGE));
                 intent.putExtra(Extras.MESSAGE_ID, data.getStringExtra(Extras.MESSAGE_ID));
                 intent.putExtra(Extras.MESSAGE_TYPE, data.getStringExtra(Extras.MESSAGE_TYPE));
-
                 startActivity(intent);
                 finish();
             }
         }
-
     }
-
-    private void uploadFile(Uri uri, String messageType) {
-        DatabaseReference databaseReference = mRootRef.child(NodeNames.MESSAGES).child(currentUserId).child(chatUserId).push();
-        String pushId = databaseReference.getKey();
-
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        String folderName = messageType.equals(Constants.MESSAGE_TYPE_VIDEO) ? Constants.MESSAGE_VIDEOS : Constants.MESSAGE_IMAGES;
-        String fileName = messageType.equals(Constants.MESSAGE_TYPE_VIDEO) ? pushId + ".mp4" : pushId + ".jpg";
-
-        StorageReference fileRef = storageReference.child(folderName).child(fileName);
-        UploadTask uploadTask = fileRef.putFile(uri);
-
-        uploadProgress(uploadTask, fileRef, pushId, messageType);
-
-
-    }
-
-    private void uploadBytes(ByteArrayOutputStream bytes) {
-        DatabaseReference databaseReference = mRootRef.child(NodeNames.MESSAGES).child(currentUserId).child(chatUserId).push();
-        String pushId = databaseReference.getKey();
-
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        String folderName = Constants.MESSAGE_IMAGES;
-        String fileName = pushId + ".jpg";
-
-        StorageReference fileRef = storageReference.child(folderName).child(fileName);
-        UploadTask uploadTask = fileRef.putBytes(bytes.toByteArray());
-        uploadProgress(uploadTask, fileRef, pushId, Constants.MESSAGE_TYPE_IMAGE);
-    }
-
-
-    private void uploadProgress(final UploadTask task, final StorageReference filePath, final String pushId, final String messageType) {
-
-        @SuppressLint("InflateParams") final View view = getLayoutInflater().inflate(R.layout.file_progress, null);
-        final ProgressBar pbProgress = view.findViewById(R.id.pbProgress);
-        final TextView tvProgress = view.findViewById(R.id.tvFileProgress);
-        final ImageView ivPlay = view.findViewById(R.id.ivPlay);
-        final ImageView ivPause = view.findViewById(R.id.ivPause);
-        ImageView ivCancel = view.findViewById(R.id.ivCancel);
-
-        ivPause.setOnClickListener(view1 -> {
-            task.pause();
-            ivPlay.setVisibility(View.VISIBLE);
-            ivPause.setVisibility(View.GONE);
-        });
-
-        ivPlay.setOnClickListener(view2 -> {
-            task.resume();
-            ivPause.setVisibility(View.VISIBLE);
-            ivPlay.setVisibility(View.GONE);
-        });
-
-        ivCancel.setOnClickListener(view3 -> task.cancel());
-
-        llProgress.addView(view);
-        tvProgress.setText(getString(R.string.upload_progress, messageType, "0"));
-
-        task.addOnProgressListener(taskSnapshot -> {
-            double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-
-            pbProgress.setProgress((int) progress);
-            tvProgress.setText(getString(R.string.upload_progress, messageType, String.valueOf(pbProgress.getProgress())));
-
-        });
-
-        task.addOnCompleteListener(task1 -> {
-            llProgress.removeView(view);
-            if (task1.isSuccessful()) {
-                filePath.getDownloadUrl().addOnSuccessListener(uri -> {
-                    String downloadUrl = uri.toString();
-                    sendMessage(downloadUrl, messageType, pushId);
-                });
-            }
-        });
-
-        task.addOnFailureListener(e -> {
-            llProgress.removeView(view);
-            Toast.makeText(ChatActivity.this, getString(R.string.failed_to_upload, e.getMessage()), Toast.LENGTH_SHORT).show();
-        });
-
-    }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -937,110 +1073,78 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    public  void  downloadFile(String messageId, final String messageType, final boolean isShare){
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_DENIED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
-        }
-        else
-        {
-            String folderName = messageType.equals(Constants.MESSAGE_TYPE_VIDEO)?Constants.MESSAGE_VIDEOS : Constants.MESSAGE_IMAGES;
-            String fileName = messageType.equals(Constants.MESSAGE_TYPE_VIDEO)?messageId + ".mp4": messageId + ".jpg";
+    public void downloadFile(String messageId, final String messageType, final boolean isShare) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+        } else {
+            DatabaseReference messageRef = mRootRef.child(NodeNames.MESSAGES)
+                    .child(currentUserId).child(chatUserId).child(messageId);
 
-            StorageReference fileRef= FirebaseStorage.getInstance().getReference().child(folderName).child(fileName);
-            final String localFilePath = Objects.requireNonNull(getExternalFilesDir(null)).getAbsolutePath() + "/" + fileName;
+            messageRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    MessageModel message = dataSnapshot.getValue(MessageModel.class);
+                    if (message != null) {
+                        String base64Data = message.getMessage();
+                        byte[] fileBytes = Base64.decode(base64Data, Base64.DEFAULT);
 
-            File localFile = new File(localFilePath);
+                        String fileName = messageId +
+                                (messageType.equals(Constants.MESSAGE_TYPE_VIDEO) ? ".mp4" : ".jpg");
+                        String localFilePath = Objects.requireNonNull(getExternalFilesDir(null))
+                                .getAbsolutePath() + "/" + fileName;
 
-            try {
-                if(localFile.exists() || localFile.createNewFile())
-                {
-                    final FileDownloadTask downloadTask =  fileRef.getFile(localFile);
+                        try {
+                            FileOutputStream fos = new FileOutputStream(localFilePath);
+                            fos.write(fileBytes);
+                            fos.close();
 
-                    @SuppressLint("InflateParams") final View view = getLayoutInflater().inflate(R.layout.file_progress, null);
-                    final ProgressBar pbProgress = view.findViewById(R.id.pbProgress);
-                    final TextView tvProgress = view.findViewById(R.id.tvFileProgress);
-                    final ImageView ivPlay = view.findViewById(R.id.ivPlay);
-                    final ImageView ivPause = view.findViewById(R.id.ivPause);
-                    ImageView ivCancel = view.findViewById(R.id.ivCancel);
-
-                    ivPause.setOnClickListener(view4 -> {
-                        downloadTask.pause();
-                        ivPlay.setVisibility(View.VISIBLE);
-                        ivPause.setVisibility(View.GONE);
-                    });
-
-                    ivPlay.setOnClickListener(view3 -> {
-                        downloadTask.resume();
-                        ivPause.setVisibility(View.VISIBLE);
-                        ivPlay.setVisibility(View.GONE);
-                    });
-
-                    ivCancel.setOnClickListener(view2 -> downloadTask.cancel());
-
-                    llProgress.addView(view);
-                    tvProgress.setText(getString(R.string.download_progress, messageType, "0"));
-
-                    downloadTask.addOnProgressListener(taskSnapshot -> {
-                        double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-
-                        pbProgress.setProgress((int) progress);
-                        tvProgress.setText(getString(R.string.download_progress, messageType, String.valueOf(pbProgress.getProgress())));
-                    });
-
-                    downloadTask.addOnCompleteListener(task -> {
-                        llProgress.removeView(view);
-                        if (task.isSuccessful()) {
-
-                            if(isShare){
-                                Intent intentShare = new Intent();
-                                intentShare.setAction(Intent.ACTION_SEND);
-                                intentShare.putExtra(Intent.EXTRA_STREAM, Uri.parse(localFilePath));
-                                if(messageType.equals(Constants.MESSAGE_TYPE_VIDEO))
-                                    intentShare.setType("video/mp4");
-                                if(messageType.equals(Constants.MESSAGE_TYPE_IMAGE))
-                                    intentShare.setType("image/jpg");
-                                startActivity(Intent.createChooser(intentShare, getString(R.string.share_with)));
-
+                            if (isShare) {
+                                shareFile(localFilePath, messageType);
+                            } else {
+                                viewFile(localFilePath, messageType);
                             }
-                            else {
-                                Snackbar snackbar = Snackbar.make(llProgress, getString(R.string.file_downloaded_successfully)
-                                        , Snackbar.LENGTH_INDEFINITE);
-
-                                snackbar.setAction(R.string.view, view1 -> {
-                                    Uri uri = Uri.parse(localFilePath);
-                                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                                    if (messageType.equals(Constants.MESSAGE_TYPE_VIDEO))
-                                        intent.setDataAndType(uri, "video/mp4");
-                                    else if (messageType.equals(Constants.MESSAGE_TYPE_IMAGE))
-                                        intent.setDataAndType(uri, "image/jpg");
-
-                                    startActivity(intent);
-                                });
-
-
-                                snackbar.show();
-                            }
-
+                        } catch (IOException e) {
+                            Toast.makeText(ChatActivity.this,
+                                    "Failed to save file", Toast.LENGTH_SHORT).show();
                         }
-                    });
-
-                    downloadTask.addOnFailureListener(e -> {
-                        llProgress.removeView(view);
-                        Toast.makeText(ChatActivity.this, getString(R.string.failed_to_download, e.getMessage()), Toast.LENGTH_SHORT).show();
-                    });
-
+                    }
                 }
-                else
-                {
-                    Toast.makeText(this, R.string.failed_to_store_file, Toast.LENGTH_SHORT).show();
-                }
-            }
-            catch(Exception ex){
-                Toast.makeText(ChatActivity.this, getString(R.string.failed_to_download, ex.getMessage()), Toast.LENGTH_SHORT).show();
-            }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toast.makeText(ChatActivity.this,
+                            "Failed to load message", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
+    }
+
+    private void shareFile(String filePath, String messageType) {
+        Intent intentShare = new Intent();
+        intentShare.setAction(Intent.ACTION_SEND);
+        intentShare.putExtra(Intent.EXTRA_STREAM, Uri.parse(filePath));
+        intentShare.setType(messageType.equals(Constants.MESSAGE_TYPE_VIDEO) ?
+                "video/mp4" : "image/jpg");
+        startActivity(Intent.createChooser(intentShare, getString(R.string.share_with)));
+    }
+
+    private void viewFile(String filePath, String messageType) {
+        Snackbar snackbar = Snackbar.make(llProgress,
+                getString(R.string.file_downloaded_successfully),
+                Snackbar.LENGTH_INDEFINITE);
+
+        snackbar.setAction(R.string.view, view1 -> {
+            Uri uri = Uri.parse(filePath);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            intent.setDataAndType(uri,
+                    messageType.equals(Constants.MESSAGE_TYPE_VIDEO) ?
+                            "video/mp4" : "image/jpg");
+            startActivity(intent);
+        });
+
+        snackbar.show();
     }
 
     public void forwardMessage(String selectedMessageId, String selectedMessage, String selectedMessageType) {
@@ -1057,7 +1161,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         super.onBackPressed();
 
     }
-
 
     private void showSmartReplies(final MessageModel messageModel){
 

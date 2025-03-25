@@ -2,12 +2,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@drawable/chat_icon"
+    android:fitsSystemWindows="true"
     tools:context=".chats.ChatActivity">
 
-    <!-- Add Toolbar here -->
+    <!-- Toolbar at the top -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
@@ -19,21 +21,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
+    <!-- Progress indicator below toolbar -->
     <LinearLayout
+        android:id="@+id/llProgress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/llProgress"
-        android:background="@android:color/white"
         android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Smart replies container (initially empty) -->
     <LinearLayout
         android:id="@+id/llSmartReplies"
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/llSendChat">
@@ -41,72 +45,201 @@
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/cgSmartReplies"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        </com.google.android.material.chip.ChipGroup>
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 
-
-    <LinearLayout
-        android:id="@+id/llSendChat"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@android:color/white"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <EditText
-            android:id="@+id/etMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:hint="@string/enter_message"
-            android:inputType="textPersonName"
-            android:padding="8dp" />
-
-        <ImageView
-            android:id="@+id/ivAttachment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            app:srcCompat="@drawable/ic_attachment"
-            app:tint="@color/gray" />
-
-        <ImageView
-            android:id="@+id/ivSend"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            app:srcCompat="@drawable/ic_send"
-            app:tint="@color/gray" />
-    </LinearLayout>
-
+    <!-- Messages list with swipe refresh -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/srlMessages"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/llSmartReplies"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/llProgress"
+        app:layout_constraintBottom_toTopOf="@id/llSmartReplies"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/llProgress">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvMessages"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Send message input at the bottom -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/llSendChat"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/chat_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <EditText
+                android:id="@+id/etMessage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/enter_message"
+                android:inputType="textPersonName"
+                android:background="@null"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:padding="12dp" />
+
+            <ImageView
+                android:id="@+id/ivAttachment"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/ic_attachment"
+                app:tint="@color/gray" />
+
+            <ImageView
+                android:id="@+id/ivSend"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/ic_send"
+                app:tint="@color/gray" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:id="@+id/rootLayout"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    android:background="@drawable/chat_icon"-->
+<!--    android:fitsSystemWindows="true"-->
+<!--    tools:context=".chats.ChatActivity"-->
+<!--    >-->
+
+<!--    &lt;!&ndash; Add Toolbar here &ndash;&gt;-->
+<!--    <androidx.appcompat.widget.Toolbar-->
+<!--        android:id="@+id/toolbar"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="?attr/actionBarSize"-->
+<!--        android:background="@color/colorPrimary"-->
+<!--        android:elevation="4dp"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:id="@+id/llProgress"-->
+<!--        android:orientation="vertical"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"/>-->
+
+<!--    <LinearLayout-->
+<!--        android:id="@+id/llSmartReplies"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="2dp"-->
+<!--        android:orientation="vertical"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/llSendChat">-->
+
+<!--        <com.google.android.material.chip.ChipGroup-->
+<!--            android:id="@+id/cgSmartReplies"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content">-->
+<!--        </com.google.android.material.chip.ChipGroup>-->
+<!--    </LinearLayout>-->
+
+
+<!--    <androidx.cardview.widget.CardView-->
+<!--        android:id="@+id/llSendChat"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="8dp"-->
+<!--        app:cardCornerRadius="24dp"-->
+<!--        app:cardElevation="4dp"-->
+<!--        app:cardBackgroundColor="@color/chat_background"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:padding="8dp"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:gravity="center_vertical">-->
+
+<!--            <EditText-->
+<!--                android:id="@+id/etMessage"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:hint="@string/enter_message"-->
+<!--                android:inputType="textPersonName"-->
+<!--                android:background="@null"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textSize="16sp"-->
+<!--                android:padding="12dp" />-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/ivAttachment"-->
+<!--                android:layout_width="40dp"-->
+<!--                android:layout_height="40dp"-->
+<!--                android:padding="8dp"-->
+<!--                android:background="?attr/selectableItemBackgroundBorderless"-->
+<!--                android:scaleType="centerInside"-->
+<!--                app:srcCompat="@drawable/ic_attachment"-->
+<!--                app:tint="@color/gray" />-->
+
+<!--            <ImageView-->
+<!--                android:id="@+id/ivSend"-->
+<!--                android:layout_width="40dp"-->
+<!--                android:layout_height="40dp"-->
+<!--                android:padding="8dp"-->
+<!--                android:background="?attr/selectableItemBackgroundBorderless"-->
+<!--                android:scaleType="centerInside"-->
+<!--                app:srcCompat="@drawable/ic_send"-->
+<!--                app:tint="@color/gray" />-->
+<!--        </LinearLayout>-->
+<!--    </androidx.cardview.widget.CardView>-->
+
+<!--    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
+<!--        android:id="@+id/srlMessages"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_marginStart="8dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:layout_marginEnd="8dp"-->
+<!--        android:layout_marginBottom="8dp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/llSmartReplies"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHorizontal_bias="0.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/llProgress"-->
+<!--        app:layout_constraintVertical_bias="1.0">-->
+
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/rvMessages"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent" />-->
+<!--    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
+<!--</androidx.constraintlayout.widget.ConstraintLayout>-->
