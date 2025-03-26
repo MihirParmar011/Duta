@@ -116,7 +116,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private ActivityResultLauncher<Intent> pickVideoLauncher;
     private ActivityResultLauncher<Intent> forwardMessageLauncher;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -759,149 +758,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-//    private void sendMessage(final String msg, final String msgType, String pushId) {
-//        try {
-//            if (TextUtils.isEmpty(msg)){
-//                Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
-//                return;
-//            }
-//
-//            HashMap<String, Object> messageMap = new HashMap<>();
-//            messageMap.put(NodeNames.MESSAGE_ID, pushId);
-//            messageMap.put(NodeNames.MESSAGE, msg);
-//            messageMap.put(NodeNames.MESSAGE_TYPE, msgType);
-//            messageMap.put(NodeNames.MESSAGE_FROM, currentUserId);
-//            messageMap.put(NodeNames.MESSAGE_TIME, ServerValue.TIMESTAMP);  // Server will set the time
-//
-//            String currentUserRef = NodeNames.MESSAGES + "/" + currentUserId + "/" + chatUserId;
-//            String chatUserRef = NodeNames.MESSAGES + "/" + chatUserId + "/" + currentUserId;
-//
-//            HashMap<String, Object> messageUserMap = new HashMap<>();
-//            messageUserMap.put(currentUserRef + "/" + pushId, messageMap);
-//            messageUserMap.put(chatUserRef + "/" + pushId, messageMap);
-//
-//            mRootRef.updateChildren(messageUserMap).addOnCompleteListener(task -> {
-//                if (task.isSuccessful()) {
-//                    etMessage.setText("");
-//                    if (msgType.equals(Constants.MESSAGE_TYPE_TEXT)) {
-//                        conversation.add(TextMessage.createForLocalUser(msg, System.currentTimeMillis()));
-//                    }
-//                } else {
-//                    Toast.makeText(ChatActivity.this,
-//                            "Failed to send message: " + task.getException(),
-//                            Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        } catch (Exception e) {
-//            Toast.makeText(this, "Error sending message: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//        }
-//    }
-//    private void sendMessage(final String msg, final String msgType, String pushId) {
-//        try {
-//            if (TextUtils.isEmpty(msg)){
-//                Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
-//                return;
-//            }
-//
-//            HashMap<String, Object> messageMap = new HashMap<>();
-//            messageMap.put(NodeNames.MESSAGE_ID, pushId);
-//            messageMap.put(NodeNames.MESSAGE, msg);
-//            messageMap.put(NodeNames.MESSAGE_TYPE, msgType);
-//            messageMap.put(NodeNames.MESSAGE_FROM, currentUserId);
-//            messageMap.put(NodeNames.MESSAGE_TIME, ServerValue.TIMESTAMP);
-//
-//            String currentUserRef = NodeNames.MESSAGES + "/" + currentUserId + "/" + chatUserId;
-//            String chatUserRef = NodeNames.MESSAGES + "/" + chatUserId + "/" + currentUserId;
-//
-//            HashMap<String, Object> messageUserMap = new HashMap<>();
-//            messageUserMap.put(currentUserRef + "/" + pushId, messageMap);
-//            messageUserMap.put(chatUserRef + "/" + pushId, messageMap);
-//
-//            mRootRef.updateChildren(messageUserMap).addOnCompleteListener(task -> {
-//                if (task.isSuccessful()) {
-//                    etMessage.setText("");
-//                    if (msgType.equals(Constants.MESSAGE_TYPE_TEXT)) {
-//                        conversation.add(TextMessage.createForLocalUser(msg, System.currentTimeMillis()));
-//                    }
-//                } else {
-//                    Toast.makeText(ChatActivity.this,
-//                            "Failed to send message: " + task.getException(),
-//                            Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        } catch (Exception e) {
-//            Toast.makeText(this, "Error sending message: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
-//    private void loadMessages() {
-//        messagesList.clear();
-//        conversation.clear();
-//        cgSmartReplies.removeAllViews();
-//
-//        DatabaseReference databaseReferenceMessages = mRootRef.child(NodeNames.MESSAGES)
-//                .child(currentUserId)
-//                .child(chatUserId);
-//
-//        Query messageQuery = databaseReferenceMessages.limitToLast(currentPage * RECORD_PER_PAGE);
-//
-//        if (childEventListener != null) {
-//            messageQuery.removeEventListener(childEventListener);
-//        }
-//
-//        childEventListener = new ChildEventListener() {
-//            @Override
-//            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-//                try {
-//                    MessageModel message = dataSnapshot.getValue(MessageModel.class);
-//                    if (message != null) {
-//                        // Check if this message already exists to prevent duplicates
-//                        boolean exists = false;
-//                        for (MessageModel m : messagesList) {
-//                            if (m.getMessageId().equals(message.getMessageId())) {
-//                                exists = true;
-//                                break;
-//                            }
-//                        }
-//
-//                        if (!exists) {
-//                            messagesList.add(message);
-//                            messagesAdapter.notifyItemInserted(messagesList.size() - 1);
-//                            rvMessages.scrollToPosition(messagesList.size() - 1);
-//
-//                            // Only show smart replies for text messages
-//                            if (message.getMessageType().equals(Constants.MESSAGE_TYPE_TEXT)) {
-//                                showSmartReplies(message);
-//                            }
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    Log.e("ChatActivity", "Error parsing message: " + e.getMessage());
-//                }
-//                srlMessages.setRefreshing(false);
-//            }
-//
-//            @Override
-//            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
-//
-//            @Override
-//            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-//                loadMessages(); // Refresh the list if a message is removed
-//            }
-//
-//            @Override
-//            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//                Log.e("ChatActivity", "Messages loading cancelled: " + databaseError.getMessage());
-//                srlMessages.setRefreshing(false);
-//            }
-//        };
-//
-//        messageQuery.addChildEventListener(childEventListener);
-//    }
-
     @Override
     public void onClick(View view) {
         if (view == null) {
@@ -1256,7 +1112,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                                                 Chip chip = new Chip(ChatActivity.this);
                                                 ChipDrawable drawable = ChipDrawable.createFromAttributes(ChatActivity.this,
                                                         null, 0, R.style.Base_Theme_Duta);
-// R.style.Widget_MaterialComponents_Chip_Action
                                                 chip.setChipDrawable(drawable);
                                                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                                                         LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -1292,67 +1147,5 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
-    }
-
-    private void shareImage() {
-        // Get the image from your ImageView
-        ImageView imageView = findViewById(R.id.ivFullScreen);
-        Drawable drawable = imageView.getDrawable();
-        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-
-        // Save bitmap to cache
-        String path = MediaStore.Images.Media.insertImage(
-                getContentResolver(),
-                bitmap,
-                "Image Description",
-                null
-        );
-        Uri imageUri = Uri.parse(path);
-
-        // Create share intent
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("image/*");
-        shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-        startActivity(Intent.createChooser(shareIntent, "Share Image"));
-    }
-
-    private void toggleFavorite() {
-        // Implement your favorite toggle logic
-        ImageButton favoriteButton = findViewById(R.id.btnFavorite);
-        boolean isFavorite = favoriteButton.getTag() == null || !(boolean) favoriteButton.getTag();
-
-        // Update button appearance
-        favoriteButton.setImageResource(isFavorite ?
-                android.R.drawable.btn_star_big_on :
-                android.R.drawable.btn_star_big_off);
-        favoriteButton.setTag(isFavorite);
-
-        // Show toast message
-        Toast.makeText(this,
-                isFavorite ? "Added to favorites" : "Removed from favorites",
-                Toast.LENGTH_SHORT).show();
-    }
-
-    private void downloadImage() {
-        // Get the image from your ImageView
-        ImageView imageView = findViewById(R.id.ivFullScreen);
-        Drawable drawable = imageView.getDrawable();
-        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-
-        // Save to device storage
-        String fileName = "image_" + System.currentTimeMillis() + ".jpg";
-        FileOutputStream outputStream;
-        try {
-            outputStream = openFileOutput(fileName, Context.MODE_PRIVATE);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-            outputStream.close();
-
-            // Show success message
-            Toast.makeText(this, "Image saved to " + getFilesDir() + "/" + fileName,
-                    Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Failed to save image", Toast.LENGTH_SHORT).show();
-        }
     }
 }
