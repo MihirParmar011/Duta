@@ -3,11 +3,11 @@
     android:shape="rectangle">
 
     <!-- Solid background color -->
-    <solid android:color="@color/white" /> <!-- Change this to your desired color -->
+<!--    <solid android:color="@color/white" /> &lt;!&ndash; Change this to your desired color &ndash;&gt;-->
 
     <!-- Rounded corners -->
     <corners
-        android:radius="15dp" /> <!-- Adjust this value for more/less rounding -->
+        android:radius="20dp" /> <!-- Adjust this value for more/less rounding -->
     <!-- You can also specify different radii for each corner -->
     <!--
     android:topLeftRadius="8dp"

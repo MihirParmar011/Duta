@@ -984,10 +984,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.LENGTH_SHORT).show();
             }
         });
-
-
-
-
     }
 
     public void downloadFile(String messageId, final String messageType, final boolean isShare) {
