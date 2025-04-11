@@ -38,9 +38,7 @@ import java.util.Objects;
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputEditText etEmailOrUserId, etPassword;
-    private String emailOrUserId, password;
     private View progressBar;
-    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,8 +91,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void btnLoginClick(View v) {
-        emailOrUserId = Objects.requireNonNull(etEmailOrUserId.getText()).toString().trim();
-        password = Objects.requireNonNull(etPassword.getText()).toString().trim();
+        String emailOrUserId = Objects.requireNonNull(etEmailOrUserId.getText()).toString().trim();
+        String password = Objects.requireNonNull(etPassword.getText()).toString().trim();
 
         if (emailOrUserId.isEmpty()) {
             etEmailOrUserId.setError(getString(R.string.enter_email_or_user_id));

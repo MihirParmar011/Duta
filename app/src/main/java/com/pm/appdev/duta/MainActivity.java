@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private Toolbar toolbar;
     private ImageView iconCamera, iconSearch, iconMore;
+    private boolean doubleBackPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +82,13 @@ public class MainActivity extends AppCompatActivity {
         setViewPager();
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                handleCustomBackPress();
+            }
+        });
 
     }
 
@@ -158,11 +167,7 @@ public class MainActivity extends AppCompatActivity {
           return super.onOptionsItemSelected(item);
       }
 
-    private boolean doubleBackPressed = false;
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
+    private void handleCustomBackPress() {
         if (tabLayout.getSelectedTabPosition() > 0) {
             tabLayout.selectTab(tabLayout.getTabAt(0));
         } else {

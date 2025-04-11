@@ -25,6 +25,8 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.pm.appdev.duta.R;
+import android.os.Handler;
+import android.os.Looper; // Add this import at the top
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -58,6 +60,13 @@ public class Util {
         }
     }
 
+    public static void showToastOnMainThread(Context context, String message) {
+        if (context != null && message != null) {
+            new Handler(Looper.getMainLooper()).post(() ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            );
+        }
+    }
 
     public static void updateDeviceToken(final Context context, String token) {
         // 1. Check if token is valid
@@ -89,25 +98,25 @@ public class Util {
                                     Log.d("DeviceToken", "Device token updated successfully");
                                 })
                                 .addOnFailureListener(e -> {
-                                    Toast.makeText(context, R.string.failed_to_save_device_token, Toast.LENGTH_SHORT).show();
+                                    showToastOnMainThread(context, context.getString(R.string.failed_to_save_device_token));
                                     Log.e("DeviceToken", "Failed to save token", e);
                                 });
                     } else {
                         // User not found in Tokens node
-                        Toast.makeText(context, "User not found in database", Toast.LENGTH_SHORT).show();
+                        showToastOnMainThread(context, "User not found in database");
                         Log.w("DeviceToken", "User UID not found in Tokens node: " + currentUid);
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Toast.makeText(context, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    showToastOnMainThread(context, "Database error: " + databaseError.getMessage());
                     Log.e("DeviceToken", "Database error checking user", databaseError.toException());
                 }
             });
         } else {
             Log.w("DeviceToken", "User not logged in, cannot update token");
-            Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show();
+//            showToastOnMainThread(context, "User not logged in");
         }
     }
 
