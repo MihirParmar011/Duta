@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -41,6 +42,11 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -120,6 +126,33 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        View decorView = getWindow().getDecorView();
+
+// ✅ Disable fullscreen layout to show status bar properly
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            getWindow().setDecorFitsSystemWindows(true); // Content doesn't go under system bars
+        } else {
+            decorView.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE // Only stable layout, no fullscreen
+            );
+        }
+
+// ✅ Show normal status and nav bar (not transparent)
+        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.status_bar_color)); // Use your preferred color
+        getWindow().setNavigationBarColor(ContextCompat.getColor(this, R.color.navigation_bar_color));
+
+// ✅ Optional: allow cutout if needed
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
+            getWindow().setAttributes(lp);
+        }
+
+// ❌ Do not hide system bars or override insets
+// ✅ Clear any existing insets/padding listeners
+        ViewCompat.setOnApplyWindowInsetsListener(decorView, null);
+
 
         // Check if User ID is null FIRST before doing anything else
         chatUserId = getIntent().getStringExtra(Extras.USER_KEY);

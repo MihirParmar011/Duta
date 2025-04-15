@@ -1,10 +1,9 @@
 package com.pm.appdev.duta.selectfriend;
 
 public class SelectFriendModel {
-
-    private  String userId;
+    private String userId;
     private String userName;
-    private  String photoName;
+    private String photoName;
 
     public SelectFriendModel(String userId, String userName, String photoName) {
         this.userId = userId;

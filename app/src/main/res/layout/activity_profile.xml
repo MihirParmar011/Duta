@@ -17,11 +17,12 @@
         android:id="@+id/ivProfile"
         android:layout_width="120dp"
         android:layout_height="120dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="152dp"
         android:onClick="changeImage"
         android:src="@drawable/ic_profile"
         android:tint="@color/colorPrimaryDark"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -47,6 +48,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:textColorHint="@color/black"
                 android:layout_marginTop="8dp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -61,6 +63,7 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:textColorHint="@color/black"
                 android:layout_marginTop="8dp">
 
                 <com.google.android.material.textfield.TextInputEditText

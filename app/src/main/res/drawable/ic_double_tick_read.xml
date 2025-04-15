@@ -7,7 +7,7 @@
 
     <!-- First tick (behind and above) -->
     <path
-        android:strokeColor="#FDFDFD"
+        android:strokeColor="@color/black"
         android:strokeWidth="1.8"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
@@ -15,7 +15,7 @@
 
     <!-- Second tick (front) -->
     <path
-        android:strokeColor="#D1D1D1"
+        android:strokeColor="@color/black"
         android:strokeWidth="1.8"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"

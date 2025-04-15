@@ -1,13 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#525CEB</color> <!-- Replaced #001A6E -->
-    <color name="colorPrimaryDark">#3D3B40</color> <!-- Replaced #074799 -->
-    <color name="colorAccent">#BFCFE7</color> <!-- Replaced #E1FFBB -->
-    <color name="colorApp">#009990</color> <!-- Kept the same -->
-    <color name="red">#e91e63</color> <!-- Kept the same -->
-    <color name="gray">#A2A2A2</color> <!-- Kept the same -->
-    <color name="linkColor">#2196F3</color> <!-- Kept the same -->
-    <color name="chat_background">#F8EDFF</color> <!-- Replaced #ededed -->
-    <color name="white">#fff</color> <!-- Kept the same -->
-    <color name="black">#000</color> <!-- Kept the same -->
+    <!-- Primary App Colors -->
+    <color name="colorPrimary">#C0C0C0</color> <!-- Silver -->
+    <color name="colorPrimaryDark">#F4A300</color> <!-- Darker Silver -->
+    <color name="colorAccent">#A9A9A9</color> <!-- Envelope Yellow -->
+    <color name="colorApp">#0077B6</color> <!-- Bird Blue -->
+
+    <!-- Common Functional Colors -->
+    <color name="red">#e91e63</color>
+    <color name="gray">#A2A2A2</color>
+    <color name="linkColor">#2196F3</color>
+    <color name="chat_background">#FDF8F1</color> <!-- Softer chat BG -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- System UI Colors -->
+    <color name="status_bar_color">#B0B0B0</color> <!-- Match darker silver -->
+    <color name="navigation_bar_color">#999999</color> <!-- Slightly darker -->
 </resources>
+
+
+
+    <!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<resources>-->
+<!--    <color name="colorPrimary">#525CEB</color> &lt;!&ndash; Replaced #001A6E &ndash;&gt;-->
+<!--    <color name="colorPrimaryDark">#3D3B40</color> &lt;!&ndash; Replaced #074799 &ndash;&gt;-->
+<!--    <color name="colorAccent">#BFCFE7</color> &lt;!&ndash; Replaced #E1FFBB &ndash;&gt;-->
+<!--    <color name="colorApp">#009990</color> &lt;!&ndash; Kept the same &ndash;&gt;-->
+<!--    <color name="red">#e91e63</color> &lt;!&ndash; Kept the same &ndash;&gt;-->
+<!--    <color name="gray">#A2A2A2</color> &lt;!&ndash; Kept the same &ndash;&gt;-->
+<!--    <color name="linkColor">#2196F3</color> &lt;!&ndash; Kept the same &ndash;&gt;-->
+<!--    <color name="chat_background">#F8EDFF</color> &lt;!&ndash; Replaced #ededed &ndash;&gt;-->
+<!--    <color name="white">#fff</color> &lt;!&ndash; Kept the same &ndash;&gt;-->
+<!--    <color name="black">#000</color> &lt;!&ndash; Kept the same &ndash;&gt;-->
+
+<!--    <color name="status_bar_color">#FF6200EE</color> &lt;!&ndash; Replace with your preferred color &ndash;&gt;-->
+<!--    <color name="navigation_bar_color">#FF3700B3</color> &lt;!&ndash; Replace as needed &ndash;&gt;-->
+
+
+<!--</resources>-->

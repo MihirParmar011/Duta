@@ -2,7 +2,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <solid android:color="@color/linkColor"/> <!-- Light Gray Color -->
+    <solid android:color="@color/colorAccent"/> <!-- Light Gray Color -->
 
     <!-- Higher radius for rounded corners -->
     <corners
