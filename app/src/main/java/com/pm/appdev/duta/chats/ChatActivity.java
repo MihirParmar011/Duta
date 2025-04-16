@@ -129,6 +129,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
         View decorView = getWindow().getDecorView();
 
+
+
 // ✅ Disable fullscreen layout to show status bar properly
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             getWindow().setDecorFitsSystemWindows(true); // Content doesn't go under system bars
@@ -793,21 +795,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
     @Override
     public void onClick(View view) {
-        if (view == null) {
-            // Handle null view case
-            return;
-        }
+        if (view == null) return;
 
         int viewId = view.getId();
 
-        if (viewId == R.id.ivSend) {
-            // Handle send button click
+        if (viewId == R.id.ivSend) {// Handle send button click
             if (Util.connectionAvailable(this)) {
-                DatabaseReference userMessagePush = mRootRef.child(NodeNames.MESSAGES)
-                        .child(currentUserId).child(chatUserId).push();
-                String pushId = userMessagePush.getKey();
                 String messageText = etMessage.getText().toString().trim();
                 if (!TextUtils.isEmpty(messageText)) {
+                    DatabaseReference userMessagePush = mRootRef.child(NodeNames.MESSAGES)
+                            .child(currentUserId).child(chatUserId).push();
+                    String pushId = userMessagePush.getKey();
                     sendMessage(messageText, Constants.MESSAGE_TYPE_TEXT, pushId);
                 } else {
                     Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
@@ -815,92 +813,60 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 Toast.makeText(this, R.string.no_internet, Toast.LENGTH_SHORT).show();
             }
-        } else if (viewId == R.id.ivAttachment) {
-            // Handle attachment button click
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+        } else if (viewId == R.id.ivAttachment) {// Hide the keyboard
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Android 13 and above
+                ActivityCompat.requestPermissions(this,
+                        new String[]{
+                                Manifest.permission.READ_MEDIA_IMAGES,
+                                Manifest.permission.READ_MEDIA_VIDEO
+                        }, 1);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // Android 6 to 12
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            } else {
+                // Below Android 6, permission is granted at install time
                 if (bottomSheetDialog != null) {
                     bottomSheetDialog.show();
                 }
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
             }
 
-            // Hide the keyboard
-            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-            if (inputMethodManager != null && view.getWindowToken() != null) {
-                inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
         } else if (viewId == R.id.llCamera) {
-            // Handle camera option click
-            if (bottomSheetDialog != null) {
-                bottomSheetDialog.dismiss();
-            }
+            if (bottomSheetDialog != null) bottomSheetDialog.dismiss();
+
             Intent intentCamera = new Intent(ACTION_IMAGE_CAPTURE);
-            if (viewId == R.id.llCamera) {
-                if (bottomSheetDialog != null) {
-                    bottomSheetDialog.dismiss();
-                }
-//                Intent intentCamera = new Intent(ACTION_IMAGE_CAPTURE);
-                if (intentCamera.resolveActivity(getPackageManager()) != null) {
-                    captureImageLauncher.launch(intentCamera);
-                } else {
-                    Toast.makeText(this, "No camera app found", Toast.LENGTH_SHORT).show();
-                }
+            if (intentCamera.resolveActivity(getPackageManager()) != null) {
+                captureImageLauncher.launch(intentCamera);
             } else {
                 Toast.makeText(this, "No camera app found", Toast.LENGTH_SHORT).show();
             }
         } else if (viewId == R.id.llGallery) {
-            // Handle gallery option click
-            if (bottomSheetDialog != null) {
-                bottomSheetDialog.dismiss();
-            }
-            Intent intentImage = new Intent(Intent.ACTION_PICK,
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            if (viewId == R.id.llGallery) {
-                if (bottomSheetDialog != null) {
-                    bottomSheetDialog.dismiss();
-                }
-//                Intent intentImage = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                if (intentImage.resolveActivity(getPackageManager()) != null) {
-                    pickImageLauncher.launch(intentImage);
-                } else {
-                    Toast.makeText(this, "No gallery app found", Toast.LENGTH_SHORT).show();
-                }
+            if (bottomSheetDialog != null) bottomSheetDialog.dismiss();
+
+            Intent intentImage = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            if (intentImage.resolveActivity(getPackageManager()) != null) {
+                pickImageLauncher.launch(intentImage);
             } else {
                 Toast.makeText(this, "No gallery app found", Toast.LENGTH_SHORT).show();
             }
         } else if (viewId == R.id.llVideo) {
-            // Handle video option click
-            if (bottomSheetDialog != null) {
-                bottomSheetDialog.dismiss();
-            }
-            Intent intentVideo = new Intent(Intent.ACTION_PICK,
-                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
-            if (viewId == R.id.llVideo) {
-                if (bottomSheetDialog != null) {
-                    bottomSheetDialog.dismiss();
-                }
-//                Intent intentVideo = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
-                if (intentVideo.resolveActivity(getPackageManager()) != null) {
-                    pickVideoLauncher.launch(intentVideo);
-                } else {
-                    Toast.makeText(this, "No video app found", Toast.LENGTH_SHORT).show();
-                }
+            if (bottomSheetDialog != null) bottomSheetDialog.dismiss();
+
+            Intent intentVideo = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+            if (intentVideo.resolveActivity(getPackageManager()) != null) {
+                pickVideoLauncher.launch(intentVideo);
             } else {
                 Toast.makeText(this, "No video app found", Toast.LENGTH_SHORT).show();
             }
         } else if (viewId == R.id.ivClose) {
-            // Handle close button click
-            if (bottomSheetDialog != null) {
-                bottomSheetDialog.dismiss();
-            }
+            if (bottomSheetDialog != null) bottomSheetDialog.dismiss();
         } else {
-            // Handle unknown view ID
             Toast.makeText(this, "Unknown view clicked", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -948,20 +914,32 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
         if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (bottomSheetDialog != null)
-                    bottomSheetDialog.show();
-            } else {
-                Toast.makeText(this, "Permission required to access files", Toast.LENGTH_SHORT).show();
+            boolean granted = true;
+
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    granted = false;
+                    break;
+                }
             }
 
+            if (granted) {
+                if (bottomSheetDialog != null) {
+                    bottomSheetDialog.show();
+                }
+            } else {
+                Toast.makeText(this, "Permission denied!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

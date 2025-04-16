@@ -20,7 +20,7 @@
         android:layout_marginTop="152dp"
         android:onClick="changeImage"
         android:src="@drawable/ic_profile"
-        android:tint="@color/colorPrimaryDark"
+        android:tint="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
