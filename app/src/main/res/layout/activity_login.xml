@@ -93,7 +93,7 @@
                 android:padding="6dp"
                 android:text="@string/reset_password"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@color/colorPrimaryDark"
+                android:textColor="@color/black"
                  />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -117,7 +117,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/donthave_account"
-            android:textColor="@color/colorPrimaryDark" />
+            android:textColor="@color/black" />
 
         <TextView
             android:id="@+id/textView4"

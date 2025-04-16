@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Primary App Colors -->
-    <color name="colorPrimary">#C0C0C0</color> <!-- Silver -->
-    <color name="colorPrimaryDark">#F4A300</color> <!-- Darker Silver -->
+    <color name="colorPrimary">#80B3FF</color> <!-- Silver -->
+    <color name="colorPrimaryDark">#0002A1</color> <!-- Darker Silver -->
     <color name="colorAccent">#A9A9A9</color> <!-- Envelope Yellow -->
     <color name="colorApp">#0077B6</color> <!-- Bird Blue -->
 

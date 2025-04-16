@@ -27,7 +27,7 @@
             android:layout_gravity="center"
             android:id="@+id/ivProfile"
             android:src="@drawable/ic_profile"
-            android:tint="@color/colorPrimaryDark"/>
+            android:tint="@color/black"/>
 
         <TextView
             android:layout_width="match_parent"

@@ -94,7 +94,7 @@
                 android:onClick="btnChangePasswordClick"
                 android:text="@string/change_password"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@color/colorPrimaryDark" />
+                android:textColor="@color/black" />
 
 
         </LinearLayout>

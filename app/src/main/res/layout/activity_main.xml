@@ -20,11 +20,11 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:title="Dūta"
-        app:titleTextColor="@color/black"
+        app:titleTextAppearance="@style/ToolbarTitleTextAppearance"
+        app:titleTextColor="@color/colorPrimaryDark"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
         <!-- Menu icons (camera, search, more options) -->
 
 
@@ -61,18 +61,21 @@
     </androidx.appcompat.widget.Toolbar>
 
     <!-- ViewPager2 for Fragments -->
+
+    <!-- Bottom Fixed TabLayout -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/vpMain"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="8dp"
         android:contentDescription="@string/view_pager_description"
-        app:layout_constraintTop_toBottomOf="@id/topAppBar"
         app:layout_constraintBottom_toTopOf="@id/tabMain"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/topAppBar"
+        app:layout_constraintVertical_bias="1.0" />
 
-    <!-- Bottom Fixed TabLayout -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabMain"
         android:layout_width="match_parent"

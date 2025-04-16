@@ -20,7 +20,7 @@
             android:layout_width="75dp"
             android:layout_height="75dp"
             android:src="@drawable/ic_profile"
-            android:tint="@color/colorPrimaryDark"/>
+            android:tint="@color/black"/>
 
         <LinearLayout
             android:layout_width="match_parent"
