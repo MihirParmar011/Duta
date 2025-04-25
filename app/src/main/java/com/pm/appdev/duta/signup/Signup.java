@@ -32,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.pm.appdev.duta.Login.LoginActivity;
 import com.pm.appdev.duta.MainActivity;
 import com.pm.appdev.duta.R;
 
@@ -126,6 +127,9 @@ public class Signup extends AppCompatActivity {
         ivProfile.setOnClickListener(this::pickImage);
     }
 
+    public void tvLogin1Click(View v) {
+        startActivity(new Intent(this, LoginActivity.class));
+    }
     public void pickImage(View v) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {

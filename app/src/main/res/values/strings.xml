@@ -13,7 +13,7 @@
     <string name="user_created_successfully">User created successfully</string>
     <string name="signup_failed">Signup Failed : %1$s</string>
     <string name="dont_have_account">Don\'t have account?</string>
-    <string name="donthave_account">Don\'t have account?</string>
+    <string name="donthave_account">Don\'t have account? </string>
     <string name="failed_to_update_profile">Failed to update profile : %1$s</string>
     <string name="permission_required">Access permission is required</string>
     <string name="save">Save</string>
