@@ -77,15 +77,29 @@ This project follows modern mobile development practices and uses a cloud-powere
 
 ## 📸 App Screenshots
 
-| Splash Screen | Login Screen | Chat Screen |
-|:-------------:|:------------:|:-----------:|
-| ![Splash](images/splash.png) | ![Login](images/login.png) | ![Chat](images/chat.png) |
+| Splash Screen | Signup Screen | Login Screen |
+|:-------------:|:-------------:|:------------:|
+| ![Splash](img/splsh.jpg) | ![Signup](img/signup.jpg) | ![Login](img/login.jpg) |
 
-| Profile Page | Friend Request Screen | Full-Screen Image View |
-|:------------:|:----------------------:|:----------------------:|
-| ![Profile](images/profile.png) | ![Friend Request](images/friend_request.png) | ![Full Image](images/full_image.png) |
+| Main Activity | Find Friend Screen | Friend Request Screen |
+|:-------------:|:------------------:|:---------------------:|
+| ![Main Activity](img/main-activity.jpg) | ![Find Friend](img/findfriend.jpg) | ![Request](img/request.jpg) |
+
+| Chat Screen | Full-Screen Image View | Media Sending Screen |
+|:-----------:|:----------------------:|:--------------------:|
+| ![Chat](img/chat.jpg) | ![Full Screen](img/fullcreen.jpg) | ![Media](img/media.jpg) |
+
+| Select Media Option | Profile Page | Change Password |
+|:-------------------:|:------------:|:---------------:|
+| ![Select Media](img/medias.jpg) | ![Profile](img/profile.jpg) | ![Change Password](img/cangepwd.jpg) |
+
+| Reset Password | Send Mail |
+|:--------------:|:---------:|
+| ![Reset Password](img/resetpwd.jpg) | ![Send Mail](img/sendmail.jpg) |
 
 ---
+
+
 
 ## ⚙️ Installation Guide
 
