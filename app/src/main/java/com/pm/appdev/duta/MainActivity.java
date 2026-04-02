@@ -4,33 +4,25 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.graphics.Insets;
-
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
@@ -40,16 +32,21 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.pm.appdev.duta.Common.NodeNames;
 import com.pm.appdev.duta.chats.ChatFragment;
 import com.pm.appdev.duta.findfriends.FindFriendsFragment;
+import com.pm.appdev.duta.notifications.NotificationCheckManager;
+import com.pm.appdev.duta.notifications.NotificationSnapshot;
 import com.pm.appdev.duta.profile.ProfileActivity;
 import com.pm.appdev.duta.requests.RequestsFragment;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private Toolbar toolbar;
     private ImageView iconCamera, iconSearch, iconMore;
     private boolean doubleBackPressed = false;
+    private NotificationCheckManager notificationCheckManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,14 +55,12 @@ public class MainActivity extends AppCompatActivity {
 
         View decorView = getWindow().getDecorView();
 
-        // ✅ Allow layout in display cutout (notch area)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
             lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             getWindow().setAttributes(lp);
         }
 
-        // ✅ Extend layout fullscreen and under notch/nav bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             getWindow().setDecorFitsSystemWindows(false);
         } else {
@@ -77,11 +72,9 @@ public class MainActivity extends AppCompatActivity {
             );
         }
 
-        // ✅ Make status and nav bar transparent
         getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
         getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
 
-        // ✅ Optional: hide system bars, reveal on swipe
         WindowInsetsControllerCompat controller = ViewCompat.getWindowInsetsController(decorView);
         if (controller != null) {
             controller.hide(WindowInsetsCompat.Type.systemBars());
@@ -90,53 +83,22 @@ public class MainActivity extends AppCompatActivity {
             );
         }
 
-        // ✅ Handle padding if needed
         ViewCompat.setOnApplyWindowInsetsListener(decorView, (view, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            // Optional padding logic (only if content goes under system bars)
             view.setPadding(insets.left, insets.top, insets.right, insets.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
 
-//// Edge-to-edge setup
-//        View decorView = getWindow().getDecorView();
-//        ViewCompat.setOnApplyWindowInsetsListener(decorView, (view, windowInsets) -> {
-//            WindowInsetsCompat insets = windowInsets;
-//            Insets systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//
-//            // Apply padding to root view if needed
-//            view.setPadding(systemBarsInsets.left, systemBarsInsets.top, systemBarsInsets.right, systemBarsInsets.bottom);
-//
-//            return WindowInsetsCompat.CONSUMED;
-//        });
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//            getWindow().setDecorFitsSystemWindows(false);
-//        }
-//        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
-//        getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
-//
-//        WindowInsetsControllerCompat controller = ViewCompat.getWindowInsetsController(decorView);
-//        if (controller != null) {
-//            controller.setAppearanceLightStatusBars(true); // dark icons on light background
-//            controller.setAppearanceLightNavigationBars(true);
-//        }
-
-
-        // Initialize Toolbar
         toolbar = findViewById(R.id.topAppBar);
         setSupportActionBar(toolbar);
 
-        // Initialize UI Components
         tabLayout = findViewById(R.id.tabMain);
         viewPager = findViewById(R.id.vpMain);
 
-        // Initialize Icons
         iconCamera = findViewById(R.id.icon_camera);
         iconSearch = findViewById(R.id.icon_search);
         iconMore = findViewById(R.id.icon_more);
 
-        // Set Click Listeners for Icons
         iconCamera.setOnClickListener(v ->
                 Toast.makeText(MainActivity.this, "Camera Clicked", Toast.LENGTH_SHORT).show()
         );
@@ -150,15 +112,19 @@ public class MainActivity extends AppCompatActivity {
         );
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        DatabaseReference databaseReferenceUsers = FirebaseDatabase.getInstance().getReference()
-                .child(NodeNames.USERS).child(firebaseAuth.getCurrentUser().getUid());
+        if (firebaseAuth.getCurrentUser() != null) {
+            DatabaseReference databaseReferenceUsers = FirebaseDatabase.getInstance().getReference()
+                    .child(NodeNames.USERS).child(firebaseAuth.getCurrentUser().getUid());
 
-        databaseReferenceUsers.child(NodeNames.ONLINE).setValue(true);
-        databaseReferenceUsers.child(NodeNames.ONLINE).onDisconnect().setValue(false);
+            databaseReferenceUsers.child(NodeNames.ONLINE).setValue(true);
+            databaseReferenceUsers.child(NodeNames.ONLINE).onDisconnect().setValue(false);
+        }
 
         setViewPager();
+        setupNotificationChecks();
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -166,7 +132,28 @@ public class MainActivity extends AppCompatActivity {
                 handleCustomBackPress();
             }
         });
+    }
 
+    private void setupNotificationChecks() {
+        notificationCheckManager = new NotificationCheckManager(this, new NotificationCheckManager.Listener() {
+            @Override
+            public void onNotificationSnapshot(@NonNull NotificationSnapshot snapshot) {
+                updateTabBadge(0, snapshot.getUnreadChatCount());
+                updateTabBadge(1, snapshot.getPendingRequestCount());
+            }
+
+            @Override
+            public void onCheckError(@NonNull String reason, boolean retryable) {
+                Log.w(TAG, "Notification check error. retryable=" + retryable + " reason=" + reason);
+            }
+
+            @Override
+            public void onAuthRequired() {
+                Log.w(TAG, "Notification check stopped: user is not authenticated");
+                clearTabBadge(0);
+                clearTabBadge(1);
+            }
+        });
     }
 
     private void setViewPager() {
@@ -186,10 +173,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {}
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
 
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {}
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
         });
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -198,6 +187,29 @@ public class MainActivity extends AppCompatActivity {
                 tabLayout.selectTab(tabLayout.getTabAt(position));
             }
         });
+    }
+
+    private void updateTabBadge(int tabIndex, int count) {
+        TabLayout.Tab tab = tabLayout.getTabAt(tabIndex);
+        if (tab == null) {
+            return;
+        }
+
+        if (count <= 0) {
+            tab.removeBadge();
+            return;
+        }
+
+        tab.getOrCreateBadge().setVisible(true);
+        tab.getOrCreateBadge().setMaxCharacterCount(2);
+        tab.getOrCreateBadge().setNumber(Math.min(count, 99));
+    }
+
+    private void clearTabBadge(int tabIndex) {
+        TabLayout.Tab tab = tabLayout.getTabAt(tabIndex);
+        if (tab != null) {
+            tab.removeBadge();
+        }
     }
 
     public class ViewPagerAdapter extends FragmentStateAdapter {
@@ -228,21 +240,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-      public boolean onCreateOptionsMenu(Menu menu) {
-          getMenuInflater().inflate(R.menu.menu_main, menu);
-          return super.onCreateOptionsMenu(menu);
-      }
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-      @Override
-      public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-          int id = item.getItemId();
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
 
-          if(id==R.id.mnuProfile)
-          {
-              startActivity(new Intent(MainActivity.this, ProfileActivity.class));
-          }
-          return super.onOptionsItemSelected(item);
-      }
+        if (id == R.id.mnuProfile) {
+            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     private void handleCustomBackPress() {
         if (tabLayout.getSelectedTabPosition() > 0) {
@@ -259,6 +270,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        if (notificationCheckManager != null) {
+            notificationCheckManager.start();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (notificationCheckManager != null) {
+            notificationCheckManager.stop();
+        }
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
@@ -270,5 +297,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 }
