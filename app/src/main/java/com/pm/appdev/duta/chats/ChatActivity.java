@@ -107,10 +107,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     private List<MessageModel> messagesList;
     private int currentPage = 1;
     private static final int RECORD_PER_PAGE = 30;
-    private static final int REQUEST_CODE_PICK_IMAGE = 101;
-    private static final int REQUEST_CODE_PICK_VIDEO = 103;
-    private static final int REQUEST_CODE_CAPTURE_IMAGE = 102;
-    private static final int REQUEST_CODE_FORWARD_MESSAGE = 104;
     private ChildEventListener childEventListener;
     private BottomSheetDialog bottomSheetDialog;
     private LinearLayout llProgress;
@@ -613,6 +609,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 tempMessage.setMessageType(msgType);
                 tempMessage.setMessageFrom(currentUserId);
                 tempMessage.setMessageTime(System.currentTimeMillis());
+                tempMessage.setMessageStatus(Constants.MESSAGE_STATUS_SENT);
 
                 // Add to pending messages map
                 if (childEventListener instanceof ChildEventListenerWithPending) {
@@ -631,6 +628,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                 messageMap.put(NodeNames.MESSAGE_TYPE, msgType);
                 messageMap.put(NodeNames.MESSAGE_FROM, currentUserId);
                 messageMap.put(NodeNames.MESSAGE_TIME, ServerValue.TIMESTAMP);
+                messageMap.put(NodeNames.MESSAGE_STATUS, Constants.MESSAGE_STATUS_SENT);
 
                 String currentUserRef = NodeNames.MESSAGES + "/" + currentUserId + "/" + chatUserId;
                 String chatUserRef = NodeNames.MESSAGES + "/" + chatUserId + "/" + currentUserId;
@@ -650,7 +648,12 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                                 getString(R.string.failed_to_send_message, databaseError.getMessage()),
                                 Toast.LENGTH_SHORT).show();
                     } else {
-                        // Success - the real message will appear via onChildAdded
+                        // Success - mark delivered for both sender and receiver.
+                        mRootRef.child(NodeNames.MESSAGES).child(currentUserId).child(chatUserId)
+                                .child(pushId).child(NodeNames.MESSAGE_STATUS).setValue(Constants.MESSAGE_STATUS_DELIVERED);
+                        mRootRef.child(NodeNames.MESSAGES).child(chatUserId).child(currentUserId)
+                                .child(pushId).child(NodeNames.MESSAGE_STATUS).setValue(Constants.MESSAGE_STATUS_DELIVERED);
+
                         // Send notification
                         String notificationTitle = "New Message";
                         if (msgType.equals(Constants.MESSAGE_TYPE_IMAGE)) {
@@ -718,6 +721,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
                         messagesAdapter.notifyDataSetChanged();
                         rvMessages.scrollToPosition(messagesList.size() - 1);
                         srlMessages.setRefreshing(false);
+
+                        if (message.getMessageFrom().equals(chatUserId)) {
+                            markMessageAsRead(message.getMessageId());
+                        }
 
                         // Show smart replies only for received text messages
                         if (message.getMessageFrom().equals(chatUserId) &&
@@ -793,6 +800,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+
+    private void markMessageAsRead(String messageId) {
+        if (TextUtils.isEmpty(messageId)) {
+            return;
+        }
+
+        mRootRef.child(NodeNames.MESSAGES).child(currentUserId).child(chatUserId)
+                .child(messageId).child(NodeNames.MESSAGE_STATUS).setValue(Constants.MESSAGE_STATUS_READ);
+        mRootRef.child(NodeNames.MESSAGES).child(chatUserId).child(currentUserId)
+                .child(messageId).child(NodeNames.MESSAGE_STATUS).setValue(Constants.MESSAGE_STATUS_READ);
+    }
     @Override
     public void onClick(View view) {
         if (view == null) return;
@@ -867,53 +885,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_CODE_CAPTURE_IMAGE) { // Camera
-                Bitmap bitmap = (Bitmap) Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(data).getExtras())).get("data");
-                encodeAndSendImage(bitmap, Constants.MESSAGE_TYPE_IMAGE);
-            }
-            else if (requestCode == REQUEST_CODE_PICK_IMAGE) { // Gallery
-                Uri uri = Objects.requireNonNull(data).getData();
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    encodeAndSendImage(bitmap, Constants.MESSAGE_TYPE_IMAGE);
-                } catch (IOException e) {
-                    Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
-                }
-            }
-            else if (requestCode == REQUEST_CODE_PICK_VIDEO) { // Video
-                Uri uri = Objects.requireNonNull(data).getData();
-                try {
-                    byte[] videoBytes = readBytesFromUri(uri);
-                    if (videoBytes != null) {
-                        String videoBase64 = Base64.encodeToString(videoBytes, Base64.DEFAULT);
-                        DatabaseReference messageRef = mRootRef.child(NodeNames.MESSAGES)
-                                .child(currentUserId).child(chatUserId).push();
-                        String pushId = messageRef.getKey();
-                        sendMessage(videoBase64, Constants.MESSAGE_TYPE_VIDEO, pushId);
-                    }
-                } catch (IOException e) {
-                    Toast.makeText(this, "Failed to load video", Toast.LENGTH_SHORT).show();
-                }
-            }
-            else if (requestCode == REQUEST_CODE_FORWARD_MESSAGE) {
-                Intent intent = new Intent(this, ChatActivity.class);
-                intent.putExtra(Extras.USER_KEY, Objects.requireNonNull(data).getStringExtra(Extras.USER_KEY));
-                intent.putExtra(Extras.USER_NAME, data.getStringExtra(Extras.USER_NAME));
-                intent.putExtra(Extras.PHOTO_NAME, data.getStringExtra(Extras.PHOTO_NAME));
-                intent.putExtra(Extras.MESSAGE, data.getStringExtra(Extras.MESSAGE));
-                intent.putExtra(Extras.MESSAGE_ID, data.getStringExtra(Extras.MESSAGE_ID));
-                intent.putExtra(Extras.MESSAGE_TYPE, data.getStringExtra(Extras.MESSAGE_TYPE));
-                startActivity(intent);
-                finish();
-            }
-        }
-    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {

@@ -14,14 +14,20 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.pm.appdev.duta.R;
 import com.pm.appdev.duta.Common.Extras;
 import com.pm.appdev.duta.Common.Util;
+import com.pm.appdev.duta.R;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatListViewHolder> {
+
+    private static final String TAG = "ChatListAdapter";
 
     private final Context context;
     private final List<ChatListModel> chatListModelList;
@@ -46,34 +52,20 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
         holder.tvLastMessage.setText(chatListModel.getLastMessage());
         holder.tvLastMessageTime.setText(Util.getTimeAgo(chatListModel.getLastMessageTime()));
 
-        if (!chatListModel.getUnreadCount().equals("0")) {
-            holder.tvUnreadCount.setVisibility(View.VISIBLE);
+        boolean hasUnread = !Objects.equals(chatListModel.getUnreadCount(), "0");
+        holder.tvUnreadCount.setVisibility(hasUnread ? View.VISIBLE : View.GONE);
+        if (hasUnread) {
             holder.tvUnreadCount.setText(chatListModel.getUnreadCount());
-        } else {
-            holder.tvUnreadCount.setVisibility(View.GONE);
         }
 
-        // Decode Base64 photo and set to ImageView
-        if (chatListModel.getPhotoName() != null && !chatListModel.getPhotoName().isEmpty()) {
-            try {
-                byte[] decodedString = Base64.decode(chatListModel.getPhotoName(), Base64.DEFAULT);
-                Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                holder.ivProfile.setImageBitmap(decodedBitmap);
-            } catch (IllegalArgumentException e) {
-                Log.e("ChatListAdapter", "Failed to decode Base64 photo: " + e.getMessage());
-                holder.ivProfile.setImageResource(R.drawable.default_profile);
-            }
-        } else {
-            holder.ivProfile.setImageResource(R.drawable.default_profile);
-        }
+        bindProfilePhoto(holder.ivProfile, chatListModel.getPhotoName());
 
         holder.llChatList.setOnClickListener(view -> {
             if (chatListModel.getUserId() == null) {
-                Log.e("ChatListAdapter", "Error: User ID is null!");
-                return;  // Stop execution
+                Log.e(TAG, "Cannot open chat: User ID is null");
+                return;
             }
 
-            // Pass only the userId to ChatActivity
             Intent intent = new Intent(view.getContext(), ChatActivity.class);
             intent.putExtra(Extras.USER_KEY, chatListModel.getUserId());
             view.getContext().startActivity(intent);
@@ -83,6 +75,30 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
     @Override
     public int getItemCount() {
         return chatListModelList.size();
+    }
+
+    public void submitList(@NonNull List<ChatListModel> newItems) {
+        List<ChatListModel> oldItems = new ArrayList<>(chatListModelList);
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffCallback(oldItems, newItems));
+        chatListModelList.clear();
+        chatListModelList.addAll(newItems);
+        diffResult.dispatchUpdatesTo(this);
+    }
+
+    private void bindProfilePhoto(ImageView imageView, String photoBase64) {
+        if (photoBase64 == null || photoBase64.isEmpty()) {
+            imageView.setImageResource(R.drawable.default_profile);
+            return;
+        }
+
+        try {
+            byte[] decodedString = Base64.decode(photoBase64, Base64.DEFAULT);
+            Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            imageView.setImageBitmap(decodedBitmap);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Failed to decode Base64 profile photo", e);
+            imageView.setImageResource(R.drawable.default_profile);
+        }
     }
 
     public static class ChatListViewHolder extends RecyclerView.ViewHolder {
@@ -102,6 +118,43 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
             tvLastMessageTime = itemView.findViewById(R.id.tvLastMessageTime);
             tvUnreadCount = itemView.findViewById(R.id.tvUnreadCount);
             ivProfile = itemView.findViewById(R.id.ivProfile);
+        }
+    }
+
+    private static class DiffCallback extends DiffUtil.Callback {
+        private final List<ChatListModel> oldItems;
+        private final List<ChatListModel> newItems;
+
+        DiffCallback(List<ChatListModel> oldItems, List<ChatListModel> newItems) {
+            this.oldItems = oldItems;
+            this.newItems = newItems;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldItems.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newItems.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            return Objects.equals(oldItems.get(oldItemPosition).getUserId(),
+                    newItems.get(newItemPosition).getUserId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            ChatListModel oldItem = oldItems.get(oldItemPosition);
+            ChatListModel newItem = newItems.get(newItemPosition);
+            return Objects.equals(oldItem.getUserName(), newItem.getUserName())
+                    && Objects.equals(oldItem.getPhotoName(), newItem.getPhotoName())
+                    && Objects.equals(oldItem.getUnreadCount(), newItem.getUnreadCount())
+                    && Objects.equals(oldItem.getLastMessage(), newItem.getLastMessage())
+                    && oldItem.getLastMessageTime() == newItem.getLastMessageTime();
         }
     }
 }

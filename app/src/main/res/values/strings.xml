@@ -92,4 +92,13 @@
     <string name="view_pager_description">View pager for displaying content in swipeable pages</string>
     <string name="image_details">Image details</string>
 
+    <string name="search_messages_or_users">Search chats</string>
+    <string name="no_chat_search_results">No matching chats found</string>
+    <string name="loading_user">Loading…</string>
+    <string name="unknown_user">Unknown user</string>
+    <string name="default_last_message">Start chatting now</string>
+    <string name="error_failed_load_chats">Unable to load chats right now.</string>
+    <string name="error_failed_load_users">Unable to load user details.</string>
+    <string name="error_authentication_required">Please sign in to view chats.</string>
+
 </resources>

@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -122,7 +123,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     @SuppressLint("SetTextI18n")
     private void loadMessageContent(MessageViewHolder holder, MessageModel message) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        String currentUserId = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
+        if (firebaseAuth.getCurrentUser() == null) {
+            return;
+        }
+        String currentUserId = firebaseAuth.getCurrentUser().getUid();
         boolean isSent = message.getMessageFrom().equals(currentUserId);
         String messageTime = new SimpleDateFormat("h:mm a", Locale.getDefault())
                 .format(new Date(message.getMessageTime()));
@@ -145,6 +149,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                 holder.llSent.setVisibility(View.VISIBLE);
                 holder.tvSentMessage.setText(message.getMessage());
                 holder.tvSentMessageTime.setText(messageTime);
+                bindStatusIcon(holder.ivSentMessageTick, message.getMessageStatus());
                 break;
             case Constants.MESSAGE_TYPE_IMAGE:
                 holder.llSentImage.setVisibility(View.VISIBLE);
@@ -155,6 +160,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                 holder.llSent.setVisibility(View.VISIBLE);
                 holder.tvSentMessage.setText("[Video]");
                 holder.tvSentMessageTime.setText(messageTime);
+                bindStatusIcon(holder.ivSentMessageTick, message.getMessageStatus());
                 break;
         }
     }
@@ -177,6 +183,26 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                 holder.tvReceivedMessage.setText("[Video]");
                 holder.tvReceivedMessageTime.setText(messageTime);
                 break;
+        }
+    }
+
+    private void bindStatusIcon(ImageView statusIcon, String messageStatus) {
+        if (statusIcon == null) {
+            return;
+        }
+
+        if (Constants.MESSAGE_STATUS_READ.equals(messageStatus)) {
+            statusIcon.setImageResource(R.drawable.ic_double_tick_read);
+            statusIcon.setAlpha(1f);
+            statusIcon.setContentDescription("Read");
+        } else if (Constants.MESSAGE_STATUS_DELIVERED.equals(messageStatus)) {
+            statusIcon.setImageResource(R.drawable.ic_double_tick_read);
+            statusIcon.setAlpha(0.65f);
+            statusIcon.setContentDescription("Delivered");
+        } else {
+            statusIcon.setImageResource(R.drawable.ic_double_tick_read);
+            statusIcon.setAlpha(0.4f);
+            statusIcon.setContentDescription("Sent");
         }
     }
 
@@ -381,6 +407,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         public final LinearLayout llSent, llReceived;
         public final LinearLayout llSentImage, llReceivedImage;
         public final TextView tvSentMessage, tvSentMessageTime;
+        public final ImageView ivSentMessageTick;
         public final TextView tvReceivedMessage, tvReceivedMessageTime;
         public final ShapeableImageView ivSent, ivReceived;
         public final TextView tvImageSentTime, tvImageReceivedTime;
@@ -396,6 +423,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
             llReceivedImage = itemView.findViewById(R.id.llReceivedImage);
             tvSentMessage = itemView.findViewById(R.id.tvSentMessage);
             tvSentMessageTime = itemView.findViewById(R.id.tvSentMessageTime);
+            ivSentMessageTick = itemView.findViewById(R.id.ivSentMessageTick);
             tvReceivedMessage = itemView.findViewById(R.id.tvReceivedMessage);
             tvReceivedMessageTime = itemView.findViewById(R.id.tvReceivedMessageTime);
             ivSent = itemView.findViewById(R.id.ivSent);
@@ -715,6 +743,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
 //                llReceived = itemView.findViewById(R.id.llReceived);
 //                tvSentMessage = itemView.findViewById(R.id.tvSentMessage);
 //                tvSentMessageTime = itemView.findViewById(R.id.tvSentMessageTime);
+            ivSentMessageTick = itemView.findViewById(R.id.ivSentMessageTick);
 //
 //                tvReceivedMessage = itemView.findViewById(R.id.tvReceivedMessage);
 //                tvReceivedMessageTime = itemView.findViewById(R.id.tvReceivedMessageTime);

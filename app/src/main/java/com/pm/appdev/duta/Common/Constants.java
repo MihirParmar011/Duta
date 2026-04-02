@@ -15,6 +15,10 @@ public class Constants {
     public static final String MESSAGE_TYPE_IMAGE ="image" ;
     public static final String MESSAGE_TYPE_VIDEO ="video" ;
 
+    public static final String MESSAGE_STATUS_SENT = "sent";
+    public static final String MESSAGE_STATUS_DELIVERED = "delivered";
+    public static final String MESSAGE_STATUS_READ = "read";
+
     public static final String NOTIFICATION_TITLE = "title";
     public static final String NOTIFICATION_MESSAGE = "message";
 
