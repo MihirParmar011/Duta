@@ -1,4 +1,4 @@
-package com.pm.appdev.duta.Common;
+package com.pm.appdev.duta.setup.configuration;
 
 public class Extras{
 

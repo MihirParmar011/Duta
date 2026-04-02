@@ -13,7 +13,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.pm.appdev.duta.Common.Util;
+import com.pm.appdev.duta.setup.configuration.Util;
 
 public class MessageActivity extends AppCompatActivity {
 

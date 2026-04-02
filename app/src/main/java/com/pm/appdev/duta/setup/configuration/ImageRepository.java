@@ -1,4 +1,4 @@
-package com.pm.appdev.duta.Common;
+package com.pm.appdev.duta.setup.configuration;
 
 import android.graphics.Bitmap;
 
@@ -35,7 +35,7 @@ public class ImageRepository {
     }
 }
 
-//package com.pm.appdev.duta.Common;
+//package com.pm.appdev.duta.setup.configuration;
 //
 //import android.graphics.Bitmap;
 //

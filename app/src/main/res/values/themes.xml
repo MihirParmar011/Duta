@@ -1,24 +1,15 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base Light Theme -->
     <style name="Base.Theme.Duta" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Light Theme Colors -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
         <item name="colorSecondary">@color/colorAccent</item>
-        <item name="color">@color/white</item>
-        <item name="colorOnBackground">@color/black</item>
-        <item name="colorSurface">@color/chat_background</item>
-        <item name="colorOnSurface">@color/black</item>
-    </style>
-
-    <!-- res/values/themes.xml -->
-    <style name="Theme.YourApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Allow drawing behind system bars -->
+        <item name="android:windowBackground">@drawable/bg_screen_surface</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
-        <item name="android:fitsSystemWindows">false</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="materialButtonStyle">@style/Widget.Duta.Button</item>
+        <item name="textInputStyle">@style/Widget.Duta.TextInputLayout</item>
+        <item name="textInputOutlinedStyle">@style/Widget.Duta.TextInputLayout</item>
     </style>
 
     <style name="Theme.Duta" parent="Base.Theme.Duta" />

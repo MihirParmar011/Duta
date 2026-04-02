@@ -17,8 +17,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pm.appdev.duta.R;
-import com.pm.appdev.duta.Common.Extras;
-import com.pm.appdev.duta.Common.Util;
+import com.pm.appdev.duta.setup.configuration.Extras;
+import com.pm.appdev.duta.setup.configuration.Util;
 import java.util.List;
 
 public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatListViewHolder> {

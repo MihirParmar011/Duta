@@ -18,9 +18,9 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.pm.appdev.duta.R;
-import com.pm.appdev.duta.Common.Constants;
+import com.pm.appdev.duta.setup.configuration.Constants;
 import com.pm.appdev.duta.Login.LoginActivity;
-import com.pm.appdev.duta.Common.Util;
+import com.pm.appdev.duta.setup.configuration.Util;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;

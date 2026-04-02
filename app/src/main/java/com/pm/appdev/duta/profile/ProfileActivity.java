@@ -41,7 +41,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.pm.appdev.duta.R;
-import com.pm.appdev.duta.Common.NodeNames;
+import com.pm.appdev.duta.setup.configuration.NodeNames;
 import com.pm.appdev.duta.Login.LoginActivity;
 import com.pm.appdev.duta.password.ChangePasswordActivity;
 

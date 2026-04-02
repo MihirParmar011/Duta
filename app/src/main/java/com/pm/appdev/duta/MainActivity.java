@@ -37,7 +37,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.pm.appdev.duta.Common.NodeNames;
+import com.pm.appdev.duta.setup.configuration.NodeNames;
 import com.pm.appdev.duta.chats.ChatFragment;
 import com.pm.appdev.duta.findfriends.FindFriendsFragment;
 import com.pm.appdev.duta.profile.ProfileActivity;

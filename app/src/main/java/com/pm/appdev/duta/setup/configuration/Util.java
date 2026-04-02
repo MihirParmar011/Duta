@@ -1,4 +1,4 @@
-package com.pm.appdev.duta.Common;
+package com.pm.appdev.duta.setup.configuration;
 
 import android.app.ActivityManager;
 import android.app.NotificationChannel;
@@ -388,7 +388,7 @@ public class Util {
 }
 
 
-//package com.pm.appdev.duta.Common;
+//package com.pm.appdev.duta.setup.configuration;
 //
 //import android.app.ActivityManager;
 //import android.content.Context;

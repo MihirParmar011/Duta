@@ -31,8 +31,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.pm.appdev.duta.Common.Constants;
-import com.pm.appdev.duta.Common.ImageRepository;
+import com.pm.appdev.duta.setup.configuration.Constants;
+import com.pm.appdev.duta.setup.configuration.ImageRepository;
 import com.pm.appdev.duta.R;
 
 import java.io.File;
@@ -494,9 +494,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
 //    import androidx.core.content.FileProvider;
 //    import androidx.recyclerview.widget.RecyclerView;
 //
-//    import com.pm.appdev.duta.Common.ImageRepository;
+//    import com.pm.appdev.duta.setup.configuration.ImageRepository;
 //    import com.pm.appdev.duta.R;
-//    import com.pm.appdev.duta.Common.Constants;
+//    import com.pm.appdev.duta.setup.configuration.Constants;
 //    import com.google.firebase.auth.FirebaseAuth;
 //
 //    import java.io.File;

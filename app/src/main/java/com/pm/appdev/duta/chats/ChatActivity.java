@@ -51,10 +51,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.pm.appdev.duta.Common.Extras;
-import com.pm.appdev.duta.Common.NodeNames;
-import com.pm.appdev.duta.Common.Util;
-import com.pm.appdev.duta.Common.Constants;
+import com.pm.appdev.duta.setup.configuration.Extras;
+import com.pm.appdev.duta.setup.configuration.NodeNames;
+import com.pm.appdev.duta.setup.configuration.Util;
+import com.pm.appdev.duta.setup.configuration.Constants;
 import com.pm.appdev.duta.R;
 import com.pm.appdev.duta.selectfriend.SelectFriendActivity;
 

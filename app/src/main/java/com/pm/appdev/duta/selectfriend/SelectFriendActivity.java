@@ -15,8 +15,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.pm.appdev.duta.R;
-import com.pm.appdev.duta.Common.Extras;
-import com.pm.appdev.duta.Common.NodeNames;
+import com.pm.appdev.duta.setup.configuration.Extras;
+import com.pm.appdev.duta.setup.configuration.NodeNames;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -233,8 +233,8 @@ public class SelectFriendActivity extends AppCompatActivity {
 //import android.widget.Toast;
 //
 //import com.pm.appdev.duta.R;
-//import com.pm.appdev.duta.Common.Extras;
-//import com.pm.appdev.duta.Common.NodeNames;
+//import com.pm.appdev.duta.setup.configuration.Extras;
+//import com.pm.appdev.duta.setup.configuration.NodeNames;
 //import com.google.firebase.auth.FirebaseAuth;
 //import com.google.firebase.auth.FirebaseUser;
 //import com.google.firebase.database.DataSnapshot;

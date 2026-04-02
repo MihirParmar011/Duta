@@ -1,7 +1,7 @@
 package com.pm.appdev.duta.Login;
 
-import com.pm.appdev.duta.Common.NodeNames;
-import com.pm.appdev.duta.Common.Util;
+import com.pm.appdev.duta.setup.configuration.NodeNames;
+import com.pm.appdev.duta.setup.configuration.Util;
 import com.pm.appdev.duta.MainActivity;
 import com.pm.appdev.duta.MessageActivity;
 import com.pm.appdev.duta.R;

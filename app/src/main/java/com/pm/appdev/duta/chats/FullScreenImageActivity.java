@@ -16,7 +16,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.appbar.MaterialToolbar;
-import com.pm.appdev.duta.Common.ImageRepository;
+import com.pm.appdev.duta.setup.configuration.ImageRepository;
 import com.pm.appdev.duta.R;
 
 import java.io.File;
@@ -221,7 +221,7 @@ public class FullScreenImageActivity extends AppCompatActivity {
 //import androidx.appcompat.app.AppCompatActivity;
 //
 //import com.pm.appdev.duta.R;
-//import com.pm.appdev.duta.Common.ImageRepository;
+//import com.pm.appdev.duta.setup.configuration.ImageRepository;
 //
 //import java.io.InputStream;
 //

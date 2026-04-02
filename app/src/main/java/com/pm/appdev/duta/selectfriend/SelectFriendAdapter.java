@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pm.appdev.duta.R;
-import com.pm.appdev.duta.Common.Constants;
+import com.pm.appdev.duta.setup.configuration.Constants;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
@@ -106,7 +106,7 @@ public class SelectFriendAdapter extends RecyclerView.Adapter<SelectFriendAdapte
 //import androidx.recyclerview.widget.RecyclerView;
 //
 //import com.pm.appdev.duta.R;
-//import com.pm.appdev.duta.Common.Constants;
+//import com.pm.appdev.duta.setup.configuration.Constants;
 //import com.bumptech.glide.Glide;
 //import com.google.android.gms.tasks.OnSuccessListener;
 //import com.google.firebase.storage.FirebaseStorage;
